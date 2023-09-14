@@ -1,0 +1,14 @@
+{
+    "fields": [
+        {
+            "name": "character",
+            "type": "string"
+        },
+        {
+            "name": "tea_consumption",
+            "type": "double"
+        }
+    ],
+    "name": "AliceData",
+    "type": "record"
+}

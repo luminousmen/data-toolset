@@ -1,0 +1,131 @@
+from io import StringIO
+from pathlib import Path
+from unittest.mock import patch
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pytest
+from utils import TEST_DATA_DIR
+
+from data_toolset.utils.parquet import ParquetUtils
+
+
+def test_validate__valid():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test-snappy.parquet"
+    ParquetUtils.validate(file_path)
+
+
+def test_validate__empty():
+    temp_file = Path("empty_file.parquet")
+    temp_file.touch()
+    try:
+        with pytest.raises(Exception):
+            ParquetUtils.validate(temp_file)
+    finally:
+        temp_file.unlink()
+
+
+def test_validate__bad_format():
+    temp_file = Path("file.txt")
+    temp_file.touch()
+    with open(temp_file, "w") as file:
+        file.write("Test")
+
+    try:
+        with pytest.raises(Exception):
+            ParquetUtils.validate(temp_file)
+    finally:
+        temp_file.unlink()
+
+
+def test_validate__not_exist():
+    temp_file = Path("non_existent_file.parquet")
+    try:
+        with pytest.raises(Exception):
+            ParquetUtils.validate(temp_file)
+    finally:
+        pass
+
+
+def test_snappy_meta():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test-snappy.parquet"
+    result = ParquetUtils.meta(file_path)
+
+    # Add assertions to verify the expected output
+    assert isinstance(result, tuple)
+    assert len(result) == 4
+    assert result[2] == "SNAPPY"
+    assert result[3].serialized_size == 4420
+    assert result[3].num_columns == 8
+    assert result[3].num_rows == 3
+
+
+def test_gzip_meta():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test-gzip.parquet"
+    result = ParquetUtils.meta(file_path)
+
+    # Add assertions to verify the expected output
+    assert isinstance(result, tuple)
+    assert len(result) == 4
+    assert result[2] == "GZIP"
+    assert result[3].serialized_size == 4421
+    assert result[3].num_columns == 8
+    assert result[3].num_rows == 3
+
+
+def test_stats():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+
+    # Call the stats method
+    result = ParquetUtils.stats(file_path)
+    num_rows, columns_stats = result
+
+    assert num_rows == 3
+    assert isinstance(columns_stats, dict)
+    for col, stats in columns_stats.items():
+        assert isinstance(stats["count"], int)
+        assert isinstance(stats["null_count"], int)
+        assert "min" in stats
+        assert "max" in stats
+
+
+def test_head():
+    n = 3
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    result = ParquetUtils.head(file_path, n)
+    assert isinstance(result, pa.Table)
+    assert len(result) == min(n, result.num_rows)
+
+
+def test_tail_function():
+    n = 3
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    result = ParquetUtils.tail(file_path, n)
+    assert isinstance(result, pa.Table)
+    assert len(result) == min(n, result.num_rows)
+
+
+def test_count():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    result = ParquetUtils.count(file_path)
+    assert result == 3
+
+
+def test_merge():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    temp_file = Path("empty_file.avro")
+    try:
+        ParquetUtils.merge([file_path, file_path], temp_file)
+        merged_data = pq.read_table(temp_file)
+        assert len(merged_data) == 6
+    finally:
+        temp_file.unlink()
+
+
+def test_schema():
+    pass
+
+
+def test_query():
+    pass
+

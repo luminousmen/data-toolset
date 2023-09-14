@@ -1,0 +1,87 @@
+[tool.poetry]
+name = "data-toolset"
+version = "0.1.0"
+description = ""
+authors = ["Kirill Bobrov <miaplanedo@gmail.com>"]
+readme = "README.md"
+packages = [{include = "data_toolset", from = "src"}]
+homepage = "https://github.com/luminousmen/data-toolset"
+repository = "https://github.com/luminousmen/data-toolset"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastavro = "^1.7.3"
+duckdb = "^0.8.1"
+arrow = "^1.2.3"
+cython = "^3.0.2"
+pyarrow = "^13.0.0"
+python-snappy = "^0.6.1"
+tox = "^4.11.1"
+pandas = "^2.0.3"
+
+[tool.poetry.group.lint.dependencies]
+isort = "^5.10.1"
+flake8 = "^6.1.0"
+mypy = "^1.5"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.0.0"
+pytest-randomly = "^3.15.0"
+
+[tool.tox]
+legacy_tox_ini = '''
+[tox]
+envlist = py{39,310}
+isolated_build = true
+skip_missing_interpreters = true
+skipsdist = true
+[testenv]
+allowlist_externals = poetry
+skip_install = true
+commands =
+  poetry install --no-root -v
+  pip install -e .
+  poetry run pytest --cov src --cov-report xml
+'''
+
+[tool.mypy]
+# 3rd party import
+ignore_missing_imports = true
+# dynamic typing
+disallow_any_unimported = true
+disallow_any_expr = false
+disallow_any_decorated = false
+disallow_any_explicit = true
+disallow_any_generics = false
+disallow_subclassing_any = true
+# platform
+python_version = "3.9"
+# untyped
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+# None and Optional
+no_implicit_optional = true
+# Warnings
+warn_return_any = false
+warn_unreachable = true
+# Misc
+pretty = true
+
+[tool.poetry.scripts]
+data-toolset = "data_toolset.main:main"
+
+[build-system]
+requires = ["setuptools", "poetry_core>=1.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["src", "tests"]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+addopts = "-p no:cacheprovider" # deactivating pytest caching.

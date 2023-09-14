@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "Person",
+  "fields": [
+    {"name": "name", "type": "string"},
+    {"name": "age", "type": "int"},
+    {"name": "is_student", "type": "boolean"},
+    {"name": "address", "type": {"type": "record", "name": "Address", "fields": [
+        {"name": "street", "type": "string"},
+        {"name": "city", "type": "string"},
+        {"name": "zip", "type": "string"}
+      ]}
+    },
+    {"name": "phone_numbers", "type": {"type": "array", "items": "string"}},
+    {"name": "salary", "type": "int"},
+    {"name": "birth_date", "type": "int"},
+    {"name": "timestamp", "type": "int", "logicalType": "time-millis"}
+  ]
+}

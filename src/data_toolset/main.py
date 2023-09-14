@@ -1,0 +1,120 @@
+import logging
+from argparse import ArgumentParser, Namespace
+from pathlib import Path
+
+from data_toolset.utils.avro import AvroUtils
+from data_toolset.utils.parquet import ParquetUtils
+
+
+def get_file_format(file_path: Path) -> str:
+    """
+    Identify file format based on file extension.
+
+    :param file_path: Path to the file whose format needs to be identified.
+    :type file_path: Path
+    :return: The identified file format (e.g., "avro", "parquet", "csv", "json").
+    :rtype: str
+
+    This function takes a file path as input and determines the file format based on its extension.
+    It supports several common file formats, including Avro, Parquet, CSV, and JSON.
+
+    :raises ValueError: If the file format is not supported (i.e., if the file extension is unknown).
+    """
+    ext = file_path.suffix.lower()
+    if ext == ".avro":
+        return "avro"
+    elif ext == ".parquet":
+        return "parquet"
+    elif ext == ".csv":
+        return "csv"
+    elif ext == ".json":
+        return "json"
+    else:
+        raise ValueError("Unsupported file format.")
+
+
+def init_args() -> Namespace:
+    """
+    Initialize and parse command-line arguments using argparse.
+
+    :return: A namespace containing the parsed command-line arguments.
+    :rtype: Namespace
+    """
+    parser = ArgumentParser()
+
+    subparsers = parser.add_subparsers(help="commands", dest="command", required=True)
+
+    # data-toolset head
+    head_parser = subparsers.add_parser("head", help="Print the first N records from a file")
+    head_parser.add_argument("file_path", action="store", help="Path to a file")
+    head_parser.add_argument("-n", type=int, action="store", help="Print count lines of each of the specified files")
+
+    # data-toolset tail
+    tail_parser = subparsers.add_parser("tail", help="Print the last N records from a file")
+    tail_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+    tail_parser.add_argument("-n", type=int, action="store", help="Print count lines of each of the specified files")
+
+    # data-toolset meta
+    meta_parser = subparsers.add_parser("meta", help="Print a file's metadata")
+    meta_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+
+    # data-toolset schema
+    schema_parser = subparsers.add_parser("schema", help="Print the Avro schema for a file")
+    schema_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+
+    # data-toolset stats
+    stats_parser = subparsers.add_parser("stats", help="Print statistics about a file")
+    stats_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+
+    # data-toolset query
+    query_parser = subparsers.add_parser("query", help="Query a file")
+    query_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+    query_parser.add_argument("query_expression", type=str, action="store", help="Query expression to apply")
+
+    # data-toolset validate
+    validate_parser = subparsers.add_parser("validate", help="Validate a file")
+    validate_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+    validate_parser.add_argument("--schema_path", type=Path, action="store", help="Path to the schema file")
+
+    # data-toolset merge
+    merge_parser = subparsers.add_parser("merge", help="Merge multiple files into one")
+    merge_parser.add_argument("file_path", nargs='+', type=Path, action="store", help="Paths to a files to be merged")
+    merge_parser.add_argument("output_path", type=Path, action="store", help="Path to the merged output file")
+
+    # data-toolset count
+    count_parser = subparsers.add_parser("count", help="Count the number of records in a file")
+    count_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
+
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = init_args()
+    # @TODO: need to find a better way for the merge case
+    if isinstance(args.file_path, list):
+        file_path = Path(args.file_path[0])
+    else:
+        file_path = Path(args.file_path)
+    file_format = get_file_format(file_path)
+    if file_format == "avro":
+        utils_cls = AvroUtils
+    elif file_format == "parquet":
+        utils_cls = ParquetUtils
+    else:
+        raise ValueError("Unsupported file format.")
+
+    if hasattr(utils_cls, args.command):
+        function = getattr(utils_cls, args.command)
+        function_args = []
+        for arg_name in vars(args):
+            if arg_name != "command":
+                function_args.append(getattr(args, arg_name))
+        function(*function_args)
+    else:
+        raise ValueError("Invalid command.")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(format="%(asctime)s %(message)s")
+    main()

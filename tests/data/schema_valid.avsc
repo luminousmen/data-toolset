@@ -1,0 +1,40 @@
+{
+    "fields": [
+        {
+            "name": "character",
+            "type": "string"
+        },
+        {
+            "name": "age",
+            "type": "int"
+        },
+        {
+            "name": "is_human",
+            "type": "boolean"
+        },
+        {
+            "name": "height",
+            "type": "double"
+        },
+        {
+            "name": "quote",
+            "type": "string"
+        },
+        {
+            "name": "friends",
+            "type": {
+                "items": "string",
+                "type": "array"
+            }
+        },
+        {
+            "name": "appearance",
+            "type": {
+                "type": "map",
+                "values": "string"
+            }
+        }
+    ],
+    "name": "AliceData",
+    "type": "record"
+}
