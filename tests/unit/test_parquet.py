@@ -1,11 +1,11 @@
-from io import StringIO
+import csv
+import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from utils import TEST_DATA_DIR
+from utils import TEST_DATA_DIR, DATA_JSON_EXPECTED, DATA_CSV_EXPECTED
 
 from data_toolset.utils.parquet import ParquetUtils
 
@@ -129,3 +129,28 @@ def test_schema():
 def test_query():
     pass
 
+
+def test_to_json():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    temp_file = Path("data.json")
+
+    ParquetUtils.to_json(file_path, temp_file)
+
+    with temp_file.open(mode="r", encoding="utf-8") as output_file:
+        json_data = json.load(output_file)
+
+        print(json_data)
+    assert json_data == DATA_JSON_EXPECTED
+
+
+def test_to_csv():
+    file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
+    temp_file = Path("data.csv")
+
+    ParquetUtils.to_csv(file_path, temp_file)
+
+    with temp_file.open(mode="r", newline='', encoding="utf-8") as output_file:
+        csv_reader = csv.DictReader(output_file)
+        csv_data = list(csv_reader)
+
+    assert csv_data == DATA_CSV_EXPECTED

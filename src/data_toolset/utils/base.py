@@ -65,6 +65,16 @@ class BaseUtils(ABC, UtilMixin):
         ...
 
     @classmethod
+    @abstractmethod
+    def to_json(cls, file_path: Path, output_path: Path) -> None:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+        ...
+
+    @classmethod
     def query(cls, file_path: Path, query_expression: str, chunk_size: int = 1000000) -> pa.Table:
         """
         Query and filter data in an Avro or Parquet file using SQL-like expressions.

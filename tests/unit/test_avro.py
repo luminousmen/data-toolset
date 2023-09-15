@@ -1,10 +1,12 @@
+import csv
+import json
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
 import fastavro
 import pytest
-from utils import TEST_DATA_DIR
+from utils import TEST_DATA_DIR, DATA_JSON_EXPECTED, DATA_CSV_EXPECTED
 
 from data_toolset.utils.avro import AvroUtils
 
@@ -74,11 +76,11 @@ def test_snappy_meta():
     file_path = TEST_DATA_DIR / "data" / "avro" / "test-snappy.avro"
     result = AvroUtils.meta(file_path)
     expected_schema = {"fields": [{"name": "character", "type": "string"}, {"name": "age", "type": "int"},
-                                   {"name": "is_human", "type": "boolean"}, {"name": "height", "type": "double"},
-                                   {"name": "quote", "type": "string"},
-                                   {"name": "friends", "type": {"items": "string", "type": "array"}},
-                                   {"name": "appearance", "type": {"type": "map", "values": "string"}}],
-                        "name": "AliceData", "type": "record"}
+                                  {"name": "is_human", "type": "boolean"}, {"name": "height", "type": "double"},
+                                  {"name": "quote", "type": "string"},
+                                  {"name": "friends", "type": {"items": "string", "type": "array"}},
+                                  {"name": "appearance", "type": {"type": "map", "values": "string"}}],
+                       "name": "AliceData", "type": "record"}
 
     # Add assertions to verify the expected output
     assert isinstance(result, tuple)
@@ -193,3 +195,26 @@ def test_schema():
 def test_query():
     pass
 
+
+def test_to_json():
+    file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
+    temp_file = Path("data.json")
+
+    AvroUtils.to_json(file_path, temp_file)
+
+    with temp_file.open(mode="r", encoding="utf-8") as output_file:
+        json_data = json.load(output_file)
+
+    assert json_data == DATA_JSON_EXPECTED
+
+
+def test_to_csv():
+    file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
+    temp_file = Path("data.csv")
+
+    AvroUtils.to_csv(file_path, temp_file)
+
+    with temp_file.open(mode="r", newline='', encoding="utf-8") as output_file:
+        csv_reader = csv.DictReader(output_file)
+        csv_data = list(csv_reader)
+    assert csv_data == DATA_CSV_EXPECTED

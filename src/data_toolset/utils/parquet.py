@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import typing as T
@@ -218,3 +219,40 @@ class ParquetUtils(BaseUtils):
             print("File is a valid Parquet file.")
             logging.info("File is a valid Parquet file.")
 
+    @classmethod
+    def to_json(cls, file_path: Path, output_path: Path) -> None:
+        """
+        Convert a Parquet file to JSON format and save it to an output JSON file.
+
+        :param file_path: Path to the Parquet file to convert.
+        :type file_path: Path
+        :param output_path: Path to the output JSON file.
+        :type output_path: Path
+        """
+        table = cls.to_arrow_table(file_path)
+        # @TODO(kirillb): make it better - dumb solution
+        json_records = [dict(zip(table.schema.names, row)) for row in table.to_pandas().values]
+        with output_path.open(mode="w") as output_file:
+            json.dump(json_records, output_file, sort_keys=True, indent=4, cls=NpEncoder)
+
+    @classmethod
+    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+        """
+        Convert a Parquet file to CSV format and save it to an output CSV file.
+
+        :param file_path: Path to the Parquet file to convert.
+        :type file_path: Path
+        :param output_path: Path to the output CSV file.
+        :type output_path: Path
+        :param delimiter: The delimiter character used in the CSV file (default is comma).
+        :type delimiter: str
+        """
+        # @TODO(kirillb): make it better - dumb solution
+        table = cls.to_arrow_table(file_path)
+        schema = table.schema.names
+        json_records = json.loads(table.to_pandas().to_json(orient='records'))
+
+        with open(output_path, "w", newline='') as csv_file:
+            csv_writer = csv.DictWriter(csv_file, fieldnames=schema, delimiter=delimiter)
+            csv_writer.writeheader()
+            csv_writer.writerows(json_records)

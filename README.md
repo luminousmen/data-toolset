@@ -10,18 +10,17 @@ data-toolset is designed to simplify your data processing tasks by providing a m
 Python 3.9 and 3.10 are supported and tested (to some extent).
 
 ```bash
-pip install poetry
-pip install git+https://github.com/luminousmen/data-toolset.git
+pip install --user data-toolset
 ```
 
 ## Usage
 
 ```bash
 $ data-toolset -h
-usage: data-toolset [-h] {head,tail,meta,schema,stats,query,validate,merge,count} ...
+usage: data-toolset [-h] {head,tail,meta,schema,stats,query,validate,merge,count,to_json,to_csv} ...
 
 positional arguments:
-  {head,tail,meta,schema,stats,query,validate,merge,count}
+  {head,tail,meta,schema,stats,query,validate,merge,count,to_json,to_csv}
                         commands
     head                Print the first N records from a file
     tail                Print the last N records from a file
@@ -32,6 +31,8 @@ positional arguments:
     validate            Validate a file
     merge               Merge multiple files into one
     count               Count the number of records in a file
+    to_json             Convert a file to JSON format
+    to_csv              Convert a file to CSV format
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -65,13 +66,9 @@ Contributions are welcome! If you have any suggestions, bug reports, or feature 
 
 - [ ] proper online documentation
 - [ ] update README
-- [ ] proper method docstrings
-- [ ] add tests for validate and merge and count
-- [ ] create an artifact on PyPi
+- [ ] add tests for merge
 - [ ] create random_sample function
 - [ ] create schema_evolution function
 - [ ] mature create_sample function
-- [ ] to/from csv and json functionality
 - [ ] optimizations TBD
-- [ ] test coverage
 - [ ] support 3.11+

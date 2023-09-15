@@ -85,6 +85,16 @@ def init_args() -> Namespace:
     count_parser = subparsers.add_parser("count", help="Count the number of records in a file")
     count_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
 
+    # data-toolset to_json
+    to_json_parser = subparsers.add_parser("to_json", help="Convert a file to JSON format")
+    to_json_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_json_parser.add_argument("output_path", type=Path, action="store", help="Path to the output JSON file")
+
+    # data-toolset to_csv
+    to_csv_parser = subparsers.add_parser("to_csv", help="Convert a file to CSV format")
+    to_csv_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_csv_parser.add_argument("output_path", type=Path, action="store", help="Path to the output CSV file")
+
     args = parser.parse_args()
     return args
 
