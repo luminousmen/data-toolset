@@ -139,7 +139,6 @@ def test_to_json():
     with temp_file.open(mode="r", encoding="utf-8") as output_file:
         json_data = json.load(output_file)
 
-        print(json_data)
     assert json_data == DATA_JSON_EXPECTED
 
 

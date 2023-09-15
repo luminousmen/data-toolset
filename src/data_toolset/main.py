@@ -94,6 +94,7 @@ def init_args() -> Namespace:
     to_csv_parser = subparsers.add_parser("to_csv", help="Convert a file to CSV format")
     to_csv_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_csv_parser.add_argument("output_path", type=Path, action="store", help="Path to the output CSV file")
+    to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store", help="The delimiter character used in the CSV file.")
 
     args = parser.parse_args()
     return args

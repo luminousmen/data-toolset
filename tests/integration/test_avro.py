@@ -1,5 +1,6 @@
 
 import subprocess
+from pathlib import Path
 
 import pytest
 from utils import TEST_DATA_DIR
@@ -92,7 +93,6 @@ def test_schema_command(file_path):
 def test_stats_command(file_path):
     result = subprocess.run(["data-toolset", "stats", file_path], capture_output=True,
                             text=True)
-    print(result)
     assert result.returncode == 0
     assert result.stderr == ''
     # @TODO: check the result
@@ -137,3 +137,47 @@ def test_query_command(file_path):
     assert result.returncode == 0
     assert result.stderr == ''
     # @TODO: check the result
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
+    ],
+)
+def test_to_json_command(file_path):
+    output_path = Path("output.json")
+    try:
+        result = subprocess.run(["data-toolset", "to_json", file_path, output_path], capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        # @TODO: check the result
+    finally:
+        output_path.unlink()
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
+    ],
+)
+def test_to_json_command(file_path):
+    output_path = Path("output.csv")
+    try:
+        result = subprocess.run(["data-toolset", "to_csv", file_path, output_path], capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        # @TODO: check the result
+    finally:
+        output_path.unlink()

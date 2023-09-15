@@ -217,4 +217,5 @@ def test_to_csv():
     with temp_file.open(mode="r", newline='', encoding="utf-8") as output_file:
         csv_reader = csv.DictReader(output_file)
         csv_data = list(csv_reader)
+
     assert csv_data == DATA_CSV_EXPECTED

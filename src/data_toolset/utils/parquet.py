@@ -185,16 +185,12 @@ class ParquetUtils(BaseUtils):
         :param output_path: Path to the output merged file.
         :type output_path: Path
         """
-        # Read input files into list of PyArrow tables
         tables = []
         for file_path in file_paths:
             table = pq.read_table(file_path)
             tables.append(table)
 
-        # Concatenate tables into a single table
         table = pa.concat_tables(tables)
-
-        # Write output file
         pq.write_table(table, output_path)
 
     @classmethod
@@ -222,7 +218,7 @@ class ParquetUtils(BaseUtils):
     @classmethod
     def to_json(cls, file_path: Path, output_path: Path) -> None:
         """
-        Convert a Parquet file to JSON format and save it to an output JSON file.
+        Convert an Parquet file to a JSON file.
 
         :param file_path: Path to the Parquet file to convert.
         :type file_path: Path
@@ -230,15 +226,14 @@ class ParquetUtils(BaseUtils):
         :type output_path: Path
         """
         table = cls.to_arrow_table(file_path)
-        # @TODO(kirillb): make it better - dumb solution
-        json_records = [dict(zip(table.schema.names, row)) for row in table.to_pandas().values]
+        json_records = json.loads(table.to_pandas().to_json(orient="records"))
         with output_path.open(mode="w") as output_file:
             json.dump(json_records, output_file, sort_keys=True, indent=4, cls=NpEncoder)
 
     @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, delimiter=",") -> None:
         """
-        Convert a Parquet file to CSV format and save it to an output CSV file.
+        Convert an Parquet file to a CSV file.
 
         :param file_path: Path to the Parquet file to convert.
         :type file_path: Path
@@ -247,12 +242,13 @@ class ParquetUtils(BaseUtils):
         :param delimiter: The delimiter character used in the CSV file (default is comma).
         :type delimiter: str
         """
+
         # @TODO(kirillb): make it better - dumb solution
         table = cls.to_arrow_table(file_path)
         schema = table.schema.names
-        json_records = json.loads(table.to_pandas().to_json(orient='records'))
+        json_records = json.loads(table.to_pandas().to_json(orient="records"))
 
-        with open(output_path, "w", newline='') as csv_file:
+        with open(output_path, "w", newline="") as csv_file:
             csv_writer = csv.DictWriter(csv_file, fieldnames=schema, delimiter=delimiter)
             csv_writer.writeheader()
             csv_writer.writerows(json_records)

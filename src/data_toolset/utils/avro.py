@@ -241,20 +241,16 @@ class AvroUtils(BaseUtils):
 
         :param file_path: Path to the Avro file to convert.
         :type file_path: Path
-        :param output_path: Path to the JSON output file.
+        :param output_path: Path to the output JSON file.
         :type output_path: Path
         """
-        data = []
-        # @TODO(kirillb): make it better - dumb solution
         with open(file_path, "rb") as f:
-            for record in fastavro.reader(f):
-                data.append(record)
-
-        with open(output_path, "w") as json_file:
-            json.dump(data, json_file, sort_keys=True, indent=4)
+            data = list(fastavro.reader(f))
+            with open(output_path, "w") as json_file:
+                json.dump(data, json_file, sort_keys=True, indent=4)
 
     @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, delimiter=",") -> None:
         """
         Convert an Avro file to a CSV file.
 
@@ -262,7 +258,7 @@ class AvroUtils(BaseUtils):
         :type file_path: Path
         :param output_path: Path to the CSV output file.
         :type output_path: Path
-        :param delimiter: Delimiter to use in the CSV file (default is ',').
+        :param delimiter: The delimiter character used in the CSV file (default is comma).
         :type delimiter: str
         """
         with open(file_path, "rb") as f:
@@ -274,8 +270,7 @@ class AvroUtils(BaseUtils):
         else:
             column_names = []
 
-        with open(output_path, "w", newline='') as csv_file:
+        with open(output_path, "w", newline="") as csv_file:
             csv_writer = csv.DictWriter(csv_file, fieldnames=column_names, delimiter=delimiter)
             csv_writer.writeheader()
             csv_writer.writerows(avro_data)
-

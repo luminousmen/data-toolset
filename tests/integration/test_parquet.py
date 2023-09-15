@@ -92,7 +92,6 @@ def test_schema_command(file_path):
 def test_stats_command(file_path):
     result = subprocess.run(["data-toolset", "stats", file_path], capture_output=True,
                             text=True)
-    print(result)
     assert result.returncode == 0
     assert result.stderr == ''
     # @TODO: check the result
