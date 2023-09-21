@@ -2,6 +2,7 @@
 import subprocess
 from pathlib import Path
 
+import fastavro
 import pytest
 from utils import TEST_DATA_DIR
 
@@ -179,5 +180,29 @@ def test_to_json_command(file_path):
         assert result.returncode == 0
         assert result.stderr == ''
         # @TODO: check the result
+    finally:
+        output_path.unlink()
+
+
+def test_merge_command():
+    file_paths = [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
+    ]
+    output_path = Path("output.avro")
+    try:
+        result = subprocess.run(["data-toolset", "merge"] + file_paths + [output_path],
+                                capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        merged_data = []
+        with open(output_path, "rb") as f:
+            avro_reader = fastavro.reader(f)
+            for record in avro_reader:
+                merged_data.append(record)
+
+        assert len(merged_data) == 2998
     finally:
         output_path.unlink()

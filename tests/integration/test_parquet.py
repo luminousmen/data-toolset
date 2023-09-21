@@ -1,8 +1,10 @@
 
 import subprocess
+from pathlib import Path
 
 import pytest
 from utils import TEST_DATA_DIR
+import pyarrow.parquet as pq
 
 
 # @TODO: consolidate file paths somewhere
@@ -59,6 +61,7 @@ def test_meta_command(file_path):
     assert result.stderr == ''
     # @TODO: check the result
     assert len(result.stdout) > 0
+
 
 @pytest.mark.parametrize(
     "file_path",
@@ -120,3 +123,22 @@ def test_query_command(file_path):
     assert result.returncode == 0
     assert result.stderr == ''
     # @TODO: check the result
+
+
+def test_merge_command():
+    file_paths = [
+        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
+        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
+        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
+    ]
+    output_path = Path("output.avro")
+    try:
+        result = subprocess.run(["data-toolset", "merge"] + file_paths + [output_path],
+                                capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        merged_data = pq.read_table(output_path)
+        assert len(merged_data) == 3000
+    finally:
+        output_path.unlink()
