@@ -1,7 +1,7 @@
 [![Master](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml/badge.svg?branch=master)](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml)
 [![codecov](https://codecov.io/gh/luminousmen/data-toolset/branch/master/graph/badge.svg?token=6V9IPSRCB0)](https://codecov.io/gh/luminousmen/data-toolset)
 
-# data-toolset
+# data-tools(et)
 
 data-toolset is designed to simplify your data processing tasks by providing a more user-friendly alternative to the traditional JAR utilities like avro-tools and parquet-tools. With this Python package, you can effortlessly handle various data file formats, including Avro and Parquet, using a simple and intuitive command-line interface.
 
