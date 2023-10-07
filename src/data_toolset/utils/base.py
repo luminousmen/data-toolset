@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import duckdb
+import polars
 import pyarrow as pa
 
 from data_toolset.utils.mixins import UtilMixin
@@ -85,7 +86,7 @@ class BaseUtils(ABC, UtilMixin):
         ...
 
     @classmethod
-    def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> pa.Table:
+    def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> polars.DataFrame:
         """
         Query and filter data in an Avro or Parquet file using SQL-like expressions.
 
@@ -95,8 +96,8 @@ class BaseUtils(ABC, UtilMixin):
         :type query_expression: str
         :param chunk_size: Size of data chunks to retrieve per query iteration (default is 1,000,000 rows).
         :type chunk_size: int
-        :return: Arrow Table containing the result of the query.
-        :rtype: pa.Table
+        :return: Polars DataFrame containing the result of the query.
+        :rtype: polars.DataFrame
 
         This class method allows you to run SQL-like queries on an Avro or Parquet file,
         filtering and selecting data based on the provided query expression.
@@ -124,9 +125,10 @@ class BaseUtils(ABC, UtilMixin):
                 all_chunks.append(chunk)
             except StopIteration:
                 break
-        data = pa.Table.from_batches(batches=all_chunks)
-        cls._print_table(data)
-        return data
+        table = pa.Table.from_batches(batches=all_chunks)
+        df = polars.from_arrow(table)
+        print(df)
+        return df
 
     @classmethod
     def random_sample(cls, file_path: Path, output_path: Path, *, n: int, fraction: float = None):
