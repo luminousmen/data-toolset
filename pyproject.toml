@@ -18,7 +18,7 @@ cython = "^3.0.2"
 pyarrow = "^13.0.0"
 python-snappy = "^0.6.1"
 tox = "^4.11.1"
-pandas = "^2.0.3"
+polars = "^0.19.7"
 
 [tool.poetry.group.lint.dependencies]
 isort = "^5.10.1"

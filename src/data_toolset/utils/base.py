@@ -71,7 +71,17 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",") -> None:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def to_avro(cls, file_path: Path, output_path: Path) -> None:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def to_parquet(cls, file_path: Path, output_path: Path) -> None:
         ...
 
     @classmethod
