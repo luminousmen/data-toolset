@@ -248,9 +248,16 @@ class ParquetUtils(BaseUtils):
 
     @classmethod
     def to_avro(cls, file_path: Path, output_path: Path) -> None:
+        # @TODO(kirillb): not supporting timestamps at the moment
         df = polars.read_parquet(source=file_path)
         df.write_avro(file=output_path)
 
     @classmethod
     def to_parquet(cls, file_path: Path, output_path: Path) -> None:
         pass
+
+    @classmethod
+    def random_sample(cls, file_path: Path, output_path: Path, n: int, fraction: float = None) -> None:
+        df = polars.read_parquet(source=file_path)
+        sample_df = df.sample(n=n, fraction=fraction)
+        sample_df.write_parquet(output_path)

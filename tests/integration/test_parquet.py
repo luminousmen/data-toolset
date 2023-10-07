@@ -131,14 +131,32 @@ def test_merge_command():
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
     ]
-    output_path = Path("output.avro")
+    output_path = Path("output.parquet")
     try:
         result = subprocess.run(["data-toolset", "merge"] + file_paths + [output_path],
                                 capture_output=True,
                                 text=True)
         assert result.returncode == 0
         assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
         merged_data = pq.read_table(output_path)
         assert len(merged_data) == 3000
     finally:
         output_path.unlink()
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
+    ],
+)
+def test_random_sample(file_path):
+    output_path = Path("output.parquet")
+    result = subprocess.run(["data-toolset", "random_sample", file_path, output_path, "--n", "10"], capture_output=True,
+                            text=True)
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert output_path.is_file()
+    assert output_path.stat().st_size > 0

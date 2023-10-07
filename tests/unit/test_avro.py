@@ -222,3 +222,11 @@ def test_to_csv():
     # @TODO(kirillb): assert the content
     # assert csv_data == DATA_CSV_EXPECTED
 
+
+def test_to_parquet():
+    file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
+    temp_file = Path("data.parquet")
+
+    AvroUtils.to_parquet(file_path, temp_file)
+    assert temp_file.is_file()
+    assert temp_file.stat().st_size > 0

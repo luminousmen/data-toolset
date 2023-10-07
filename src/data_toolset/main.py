@@ -1,11 +1,14 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+import polars
 
 from data_toolset.utils.avro import AvroUtils
 from data_toolset.utils.parquet import ParquetUtils
 
 DEFAULT_RECORDS = 20
+polars.Config.set_tbl_cols(5000)
+polars.Config.set_fmt_str_lengths(5000)
 
 
 def get_file_format(file_path: Path) -> str:
@@ -100,14 +103,21 @@ def init_args() -> Namespace:
     to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store", help="The delimiter character used in the CSV file.")
 
     # data-toolset to_avro
-    to_json_parser = subparsers.add_parser("to_avro", help="Convert a file to Parquet format")
-    to_json_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
-    to_json_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
+    to_avro_parser = subparsers.add_parser("to_avro", help="Convert a file to Avro format")
+    to_avro_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_avro_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Avro file")
 
     # data-toolset to_parquet
-    to_json_parser = subparsers.add_parser("to_parquet", help="Convert a file to Parquet format")
-    to_json_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
-    to_json_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
+    to_parquet_parser = subparsers.add_parser("to_parquet", help="Convert a file to Parquet format")
+    to_parquet_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_parquet_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
+
+    # data-toolset random_sample
+    random_sample_parser = subparsers.add_parser("random_sample")
+    random_sample_parser.add_argument("file_path", type=Path, action="store")
+    random_sample_parser.add_argument("output_path", type=Path, action="store")
+    random_sample_parser.add_argument("--n", type=int, default=None, action="store")
+    random_sample_parser.add_argument("--fraction", type=float, default=None, action="store")
 
     args = parser.parse_args()
     return args

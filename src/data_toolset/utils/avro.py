@@ -253,16 +253,6 @@ class AvroUtils(BaseUtils):
 
     @classmethod
     def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",") -> None:
-        """
-        Convert an Avro file to a CSV file.
-
-        :param file_path: Path to the Avro file to convert.
-        :type file_path: Path
-        :param output_path: Path to the CSV output file.
-        :type output_path: Path
-        :param delimiter: The delimiter character used in the CSV file (default is comma).
-        :type delimiter: str
-        """
         with open(file_path, "rb") as f:
             avro_reader = fastavro.reader(f)
             df = polars.from_records(list(avro_reader))
@@ -277,3 +267,11 @@ class AvroUtils(BaseUtils):
         table = cls.to_arrow_table(file_path)
         df = polars.from_arrow(table)
         df.write_parquet(file=output_path)
+
+    @classmethod
+    def random_sample(cls, file_path: Path, output_path: Path, n: int, fraction: float = None) -> None:
+        with open(file_path, "rb") as f:
+            avro_reader = fastavro.reader(f)
+            df = polars.from_records(list(avro_reader))
+            sample_df = df.sample(n=n, fraction=fraction)
+            sample_df.write_avro(output_path)

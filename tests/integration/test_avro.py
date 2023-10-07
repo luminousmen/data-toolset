@@ -157,6 +157,8 @@ def test_to_json_command(file_path):
                                 text=True)
         assert result.returncode == 0
         assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
         # @TODO: check the result
     finally:
         output_path.unlink()
@@ -179,6 +181,8 @@ def test_to_json_command(file_path):
                                 text=True)
         assert result.returncode == 0
         assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
         # @TODO: check the result
     finally:
         output_path.unlink()
@@ -197,6 +201,8 @@ def test_merge_command():
                                 text=True)
         assert result.returncode == 0
         assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
         merged_data = []
         with open(output_path, "rb") as f:
             avro_reader = fastavro.reader(f)
@@ -206,3 +212,36 @@ def test_merge_command():
         assert len(merged_data) == 2998
     finally:
         output_path.unlink()
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+    ],
+)
+def test_to_parquet(file_path):
+    output_path = Path("output.parquet")
+    result = subprocess.run(["data-toolset", "to_parquet", file_path, output_path], capture_output=True,
+                            text=True)
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert output_path.is_file()
+    assert output_path.stat().st_size > 0
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+    ],
+)
+def test_to_parquet(file_path):
+    output_path = Path("output.avro")
+    result = subprocess.run(["data-toolset", "random_sample", file_path, output_path, "--n", "10"], capture_output=True,
+                            text=True)
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert output_path.is_file()
+    assert output_path.stat().st_size > 0
+
