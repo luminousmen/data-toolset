@@ -113,11 +113,13 @@ def init_args() -> Namespace:
     to_parquet_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
 
     # data-toolset random_sample
-    random_sample_parser = subparsers.add_parser("random_sample")
-    random_sample_parser.add_argument("file_path", type=Path, action="store")
-    random_sample_parser.add_argument("output_path", type=Path, action="store")
-    random_sample_parser.add_argument("--n", type=int, default=None, action="store")
-    random_sample_parser.add_argument("--fraction", type=float, default=None, action="store")
+    random_sample_parser = subparsers.add_parser("random_sample", help="Randomly sample records from a file")
+    random_sample_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to sample from")
+    random_sample_parser.add_argument("output_path", type=Path, action="store",
+                                      help="Path to the output file for sampled records")
+    random_sample_parser.add_argument("--n", type=int, default=None, action="store", help="Number of records to sample")
+    random_sample_parser.add_argument("--fraction", type=float, default=None, action="store",
+                                      help="Fraction of records to sample (0.0 to 1.0)")
 
     args = parser.parse_args()
     return args
