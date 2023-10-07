@@ -69,8 +69,8 @@ Contributions are welcome! If you have any suggestions, bug reports, or feature 
 # TODO
 
 - make parquet validation work with avsc schemas?
-- create random_sample function
 - create schema_evolution function
 - mature create_sample function
 - optimizations [TBD]
 - support 3.11+
+- benchmarking

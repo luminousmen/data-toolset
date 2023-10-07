@@ -1,4 +1,3 @@
-import csv
 import json
 import logging
 import typing as T
@@ -6,6 +5,7 @@ from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+import polars
 
 from data_toolset.utils.base import BaseUtils
 from data_toolset.utils.utils import NpEncoder
@@ -109,7 +109,7 @@ class ParquetUtils(BaseUtils):
                 for chunk in column.iterchunks():
                     if chunk.null_count == len(chunk):  # Skip if all values are null
                         continue
-                    non_null_values = chunk.to_pandas().dropna().values
+                    non_null_values = polars.from_arrow(chunk).drop_nans()
 
                     if len(non_null_values) > 0:
                         chunk_min = non_null_values[0]
@@ -127,7 +127,7 @@ class ParquetUtils(BaseUtils):
         return num_rows, column_stats
 
     @classmethod
-    def tail(cls, file_path: Path, n: int = 20) -> pa.Table:
+    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
         """
         Print the last N records of a Parquet file.
 
@@ -135,17 +135,16 @@ class ParquetUtils(BaseUtils):
         :type file_path: Path
         :param n: Number of records to print from the end of the file.
         :type n: int
-        :return: Arrow Table containing the last N records.
-        :rtype: pa.Table
+        :return: Polars Dataframe containing the last N records.
+        :rtype: polars.DataFrame
         """
-        table = pq.read_table(str(file_path), use_threads=True)
-        total_rows = table.num_rows
-        start_row = max(total_rows - n, 0)
-        cls._print_table(table.slice(start_row, total_rows))
-        return table
+        df = polars.read_parquet(source=file_path)
+        df = df.tail(n=n)
+        print(df)
+        return df
 
     @classmethod
-    def head(cls, file_path: Path, n: int = 20) -> pa.Table:
+    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
         """
         Print the first N records of a Parquet file.
 
@@ -153,12 +152,12 @@ class ParquetUtils(BaseUtils):
         :type file_path: Path
         :param n: Number of records to print from the beginning of the file.
         :type n: int
-        :return: Arrow Table containing the first N records.
-        :rtype: pa.Table
+        :return: Polars Dataframe containing the first N records.
+        :rtype: polars.DataFrame
         """
-        table = pa.parquet.read_table(file_path).slice(0, n)
-        cls._print_table(table)
-        return table
+        df = polars.read_parquet(source=file_path, n_rows=n)
+        print(df)
+        return df
 
     @classmethod
     def count(cls, file_path: Path) -> int:
@@ -209,8 +208,10 @@ class ParquetUtils(BaseUtils):
         cls.validate_format(file_path)
 
         if schema_path:
+            table = cls.to_arrow_table(file_path)
+            df = polars.from_arrow(table)
+            print(df.schema)
             # @TODO: implement that
-            pass
         else:
             print("File is a valid Parquet file.")
             logging.info("File is a valid Parquet file.")
@@ -226,12 +227,11 @@ class ParquetUtils(BaseUtils):
         :type output_path: Path
         """
         table = cls.to_arrow_table(file_path)
-        json_records = json.loads(table.to_pandas().to_json(orient="records"))
-        with output_path.open(mode="w") as output_file:
-            json.dump(json_records, output_file, sort_keys=True, indent=4, cls=NpEncoder)
+        df = polars.from_arrow(table)
+        df.write_json(file=output_path, row_oriented=True)
 
     @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=",") -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",") -> None:
         """
         Convert an Parquet file to a CSV file.
 
@@ -242,13 +242,22 @@ class ParquetUtils(BaseUtils):
         :param delimiter: The delimiter character used in the CSV file (default is comma).
         :type delimiter: str
         """
-
-        # @TODO(kirillb): make it better - dumb solution
         table = cls.to_arrow_table(file_path)
-        schema = table.schema.names
-        json_records = json.loads(table.to_pandas().to_json(orient="records"))
+        df = polars.from_arrow(table)
+        df.write_csv(file=output_path, has_header=has_header, separator=delimiter)
 
-        with open(output_path, "w", newline="") as csv_file:
-            csv_writer = csv.DictWriter(csv_file, fieldnames=schema, delimiter=delimiter)
-            csv_writer.writeheader()
-            csv_writer.writerows(json_records)
+    @classmethod
+    def to_avro(cls, file_path: Path, output_path: Path) -> None:
+        # @TODO(kirillb): not supporting timestamps at the moment
+        df = polars.read_parquet(source=file_path)
+        df.write_avro(file=output_path)
+
+    @classmethod
+    def to_parquet(cls, file_path: Path, output_path: Path) -> None:
+        pass
+
+    @classmethod
+    def random_sample(cls, file_path: Path, output_path: Path, n: int, fraction: float = None) -> None:
+        df = polars.read_parquet(source=file_path)
+        sample_df = df.sample(n=n, fraction=fraction)
+        sample_df.write_parquet(output_path)
