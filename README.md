@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/luminousmen/data-toolset/main/branding/logo/logo.png" width="200">
+<img src="https://raw.githubusercontent.com/luminousmen/data-toolset/master/branding/logo/logo.png" width="200">
 </h1><br>
 
 [![Master](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml/badge.svg?branch=master)](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml)
