@@ -1,3 +1,7 @@
+<h1 align="center">
+<img src="/Users/kirill/Projects/data-toolset/branding/logo/logo.png" width="200">
+</h1><br>
+
 [![Master](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml/badge.svg?branch=master)](https://github.com/luminousmen/data-toolset/actions/workflows/master.yml)
 [![codecov](https://codecov.io/gh/luminousmen/data-toolset/branch/master/graph/badge.svg?token=6V9IPSRCB0)](https://codecov.io/gh/luminousmen/data-toolset)
 

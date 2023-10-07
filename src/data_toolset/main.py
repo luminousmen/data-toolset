@@ -1,9 +1,14 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+import polars
 
 from data_toolset.utils.avro import AvroUtils
 from data_toolset.utils.parquet import ParquetUtils
+
+DEFAULT_RECORDS = 20
+polars.Config.set_tbl_cols(5000)
+polars.Config.set_fmt_str_lengths(5000)
 
 
 def get_file_format(file_path: Path) -> str:
@@ -47,12 +52,12 @@ def init_args() -> Namespace:
     # data-toolset head
     head_parser = subparsers.add_parser("head", help="Print the first N records from a file")
     head_parser.add_argument("file_path", action="store", help="Path to a file")
-    head_parser.add_argument("-n", type=int, action="store", help="Print count lines of each of the specified files")
+    head_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS, help="Print count lines of each of the specified files")
 
     # data-toolset tail
     tail_parser = subparsers.add_parser("tail", help="Print the last N records from a file")
     tail_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
-    tail_parser.add_argument("-n", type=int, action="store", help="Print count lines of each of the specified files")
+    tail_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS, help="Print count lines of each of the specified files")
 
     # data-toolset meta
     meta_parser = subparsers.add_parser("meta", help="Print a file's metadata")
@@ -94,7 +99,25 @@ def init_args() -> Namespace:
     to_csv_parser = subparsers.add_parser("to_csv", help="Convert a file to CSV format")
     to_csv_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_csv_parser.add_argument("output_path", type=Path, action="store", help="Path to the output CSV file")
+    to_csv_parser.add_argument("--has_header", default=True, type=bool, action="store")
     to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store", help="The delimiter character used in the CSV file.")
+
+    # data-toolset to_avro
+    to_avro_parser = subparsers.add_parser("to_avro", help="Convert a file to Avro format")
+    to_avro_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_avro_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Avro file")
+
+    # data-toolset to_parquet
+    to_parquet_parser = subparsers.add_parser("to_parquet", help="Convert a file to Parquet format")
+    to_parquet_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
+    to_parquet_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
+
+    # data-toolset random_sample
+    random_sample_parser = subparsers.add_parser("random_sample")
+    random_sample_parser.add_argument("file_path", type=Path, action="store")
+    random_sample_parser.add_argument("output_path", type=Path, action="store")
+    random_sample_parser.add_argument("--n", type=int, default=None, action="store")
+    random_sample_parser.add_argument("--fraction", type=float, default=None, action="store")
 
     args = parser.parse_args()
     return args

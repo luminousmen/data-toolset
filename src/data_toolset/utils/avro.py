@@ -1,11 +1,11 @@
 import os
-import csv
 import json
 import logging
 import typing as T
 from pathlib import Path
 
 import fastavro
+import polars
 import pyarrow as pa
 
 from data_toolset.utils.base import BaseUtils
@@ -118,7 +118,7 @@ class AvroUtils(BaseUtils):
             return num_rows, column_stats
 
     @classmethod
-    def tail(cls, file_path: Path, n: int = 20) -> T.List:
+    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
         """
         Print the last N records of an Avro file.
 
@@ -126,8 +126,8 @@ class AvroUtils(BaseUtils):
         :type file_path: Path
         :param n: Number of records to print from the end of the file.
         :type n: int
-        :return: Arrow Table containing the last N records.
-        :rtype: pa.Table
+        :return: Polars Dataframe containing the last N records.
+        :rtype: polars.DataFrame
         """
         with open(file_path, "rb") as f:
             avro_reader = fastavro.reader(f)
@@ -138,11 +138,12 @@ class AvroUtils(BaseUtils):
             num_to_read = min(num_records, n)
             # Read the last N records and store them in a list
             records = [record for record in records[num_records - num_to_read:num_records]]
-            print(records)
-            return records
+            df = polars.from_records(records)
+            print(df)
+            return df
 
     @classmethod
-    def head(cls, file_path: Path, n: int = 20) -> list:
+    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
         """
         Print the first N records of a Parquet file.
 
@@ -150,8 +151,8 @@ class AvroUtils(BaseUtils):
         :type file_path: Path
         :param n: Number of records to print from the beginning of the file.
         :type n: int
-        :return: Arrow Table containing the first N records.
-        :rtype: pa.Table
+        :return: Polars Dataframe containing the first N records.
+        :rtype: polars.DataFrame
         """
         records = []
         with open(file_path, "rb") as f:
@@ -159,9 +160,10 @@ class AvroUtils(BaseUtils):
             for i, record in enumerate(avro_reader):
                 if i == n:
                     break
-                print(record)
                 records.append(record)
-        return records
+        df = polars.from_records(records)
+        print(df)
+        return df
 
     @classmethod
     def count(cls, file_path: Path) -> int:
@@ -250,27 +252,26 @@ class AvroUtils(BaseUtils):
                 json.dump(data, json_file, sort_keys=True, indent=4)
 
     @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=",") -> None:
-        """
-        Convert an Avro file to a CSV file.
-
-        :param file_path: Path to the Avro file to convert.
-        :type file_path: Path
-        :param output_path: Path to the CSV output file.
-        :type output_path: Path
-        :param delimiter: The delimiter character used in the CSV file (default is comma).
-        :type delimiter: str
-        """
+    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",") -> None:
         with open(file_path, "rb") as f:
             avro_reader = fastavro.reader(f)
-            avro_data = list(avro_reader)
+            df = polars.from_records(list(avro_reader))
+            df.write_csv(file=output_path, has_header=has_header, separator=delimiter)
 
-        if avro_data:
-            column_names = list(avro_data[0].keys())
-        else:
-            column_names = []
+    @classmethod
+    def to_avro(cls, file_path: Path, output_path: Path) -> None:
+        pass
 
-        with open(output_path, "w", newline="") as csv_file:
-            csv_writer = csv.DictWriter(csv_file, fieldnames=column_names, delimiter=delimiter)
-            csv_writer.writeheader()
-            csv_writer.writerows(avro_data)
+    @classmethod
+    def to_parquet(cls, file_path: Path, output_path: Path) -> None:
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df.write_parquet(file=output_path)
+
+    @classmethod
+    def random_sample(cls, file_path: Path, output_path: Path, n: int, fraction: float = None) -> None:
+        with open(file_path, "rb") as f:
+            avro_reader = fastavro.reader(f)
+            df = polars.from_records(list(avro_reader))
+            sample_df = df.sample(n=n, fraction=fraction)
+            sample_df.write_avro(output_path)

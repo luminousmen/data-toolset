@@ -41,12 +41,12 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def tail(cls, file_path: Path, n: int = 20) -> T.List:
+    def tail(cls, file_path: Path, *, n: int = 20) -> T.List:
         ...
 
     @classmethod
     @abstractmethod
-    def head(cls, file_path: Path, n: int = 20) -> list:
+    def head(cls, file_path: Path, *, n: int = 20) -> list:
         ...
 
     @classmethod
@@ -71,11 +71,21 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def to_csv(cls, file_path: Path, output_path: Path, delimiter=',') -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, *, has_header: bool = True, delimiter: str = ",") -> None:
         ...
 
     @classmethod
-    def query(cls, file_path: Path, query_expression: str, chunk_size: int = 1000000) -> pa.Table:
+    @abstractmethod
+    def to_avro(cls, file_path: Path, output_path: Path) -> None:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def to_parquet(cls, file_path: Path, output_path: Path) -> None:
+        ...
+
+    @classmethod
+    def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> pa.Table:
         """
         Query and filter data in an Avro or Parquet file using SQL-like expressions.
 
@@ -117,3 +127,7 @@ class BaseUtils(ABC, UtilMixin):
         data = pa.Table.from_batches(batches=all_chunks)
         cls._print_table(data)
         return data
+
+    @classmethod
+    def random_sample(cls, file_path: Path, output_path: Path, *, n: int, fraction: float = None):
+        ...
