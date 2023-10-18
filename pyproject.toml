@@ -11,10 +11,6 @@ license = "MIT"
 classifiers = [
     "Topic :: Data Processing",
     "Topic :: Command Line Tools",
-    "Topic :: Utilities :: File Management :: Avro",
-    "Topic :: Utilities :: File Management :: JSON",
-    "Topic :: Utilities :: File Management :: CSV",
-    "Topic :: Utilities :: File Management :: Parquet",
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
