@@ -26,18 +26,6 @@ class ParquetUtils(BaseUtils):
         return table
 
     @classmethod
-    def write_arrow_table(cls, table: pa.Table, file_path: Path) -> None:
-        """
-        Write an Arrow Table to a Parquet file.
-
-        :param table: Arrow Table to write to the Parquet file.
-        :type table: pa.Table
-        :param file_path: Path to the Parquet file to write.
-        :type file_path: Path
-        """
-        pa.parquet.write_table(table, file_path)
-
-    @classmethod
     def validate_format(cls, file_path: Path) -> None:
         """
         Validate a Parquet file.

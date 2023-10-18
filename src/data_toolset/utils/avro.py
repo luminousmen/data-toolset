@@ -28,19 +28,6 @@ class AvroUtils(BaseUtils):
             return table
 
     @classmethod
-    def write_arrow_table(cls, table: pa.Table, file_path: Path) -> None:
-        """
-        Write an Arrow Table to an Avro file.
-
-        :param table: Arrow Table to write to the Avro file.
-        :type table: pa.Table
-        :param file_path: Path to the Avro file to write.
-        :type file_path: Path
-        """
-        with open(file_path, "wb") as f:
-            fastavro.writer(f, table.schema, table.to_pydict().values())
-
-    @classmethod
     def validate_format(cls, file_path: Path) -> None:
         """
         Validate a Avro file.

@@ -17,11 +17,6 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def write_arrow_table(cls, table: pa.Table, file_path: Path) -> None:
-        ...
-
-    @classmethod
-    @abstractmethod
     def validate_format(cls, file_path: Path) -> None:
         ...
 
