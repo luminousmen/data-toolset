@@ -8,14 +8,6 @@ packages = [{include = "data_toolset", from = "src"}]
 homepage = "https://github.com/luminousmen/data-toolset"
 repository = "https://github.com/luminousmen/data-toolset"
 license = "MIT"
-classifiers = [
-    "Topic :: Data Processing",
-    "Topic :: Command Line Tools",
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10'
-]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
