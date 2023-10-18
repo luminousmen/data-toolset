@@ -226,7 +226,31 @@ def test_to_csv():
 def test_to_parquet():
     file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
     temp_file = Path("data.parquet")
+    try:
+        AvroUtils.to_parquet(file_path, temp_file)
+        assert temp_file.is_file()
+        assert temp_file.stat().st_size > 0
+    finally:
+        temp_file.unlink()
 
-    AvroUtils.to_parquet(file_path, temp_file)
-    assert temp_file.is_file()
-    assert temp_file.stat().st_size > 0
+
+def test_random_sample__with_n():
+    file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
+    temp_file = Path("data.parquet")
+    try:
+        AvroUtils.random_sample(file_path, temp_file, n=1)
+        assert temp_file.is_file()
+        assert temp_file.stat().st_size > 0
+    finally:
+        temp_file.unlink()
+
+
+def test_random_sample__with_fraction():
+    file_path = TEST_DATA_DIR / "data" / "avro" / "test.avro"
+    temp_file = Path("data.parquet")
+    try:
+        AvroUtils.random_sample(file_path, temp_file, fraction=0.5)
+        assert temp_file.is_file()
+        assert temp_file.stat().st_size > 0
+    finally:
+        temp_file.unlink()

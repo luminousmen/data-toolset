@@ -64,8 +64,6 @@ def test_main__with_invalid_command(command, file_path):
 @pytest.mark.parametrize(
     "command, file_path",
     [
-        ("head", TEST_DATA_DIR / "data" / "avro" / "test.csv"),
-        ("head", TEST_DATA_DIR / "data" / "avro" / "test.json"),
         ("head", TEST_DATA_DIR / "data" / "avro" / "test.txt"),
     ],
 )

@@ -11,7 +11,7 @@ data-toolset is designed to simplify your data processing tasks by providing a m
 
 ## Installation
 
-Python 3.9 and 3.10 are supported and tested (to some extent).
+Python 3.8, Python 3.9 and 3.10 are supported and tested (to some extent).
 
 ```bash
 python -m pip install --user data-toolset
@@ -97,9 +97,5 @@ Contributions are welcome! If you have any suggestions, bug reports, or feature 
 
 # TODO
 
-- make parquet validation work with avsc schemas?
-- create schema_evolution function
-- mature create_sample function
 - optimizations [TBD]
-- support 3.11+
 - benchmarking

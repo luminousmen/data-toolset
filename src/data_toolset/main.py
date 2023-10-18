@@ -94,6 +94,7 @@ def init_args() -> Namespace:
     to_json_parser = subparsers.add_parser("to_json", help="Convert a file to JSON format")
     to_json_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_json_parser.add_argument("output_path", type=Path, action="store", help="Path to the output JSON file")
+    to_json_parser.add_argument("--pretty", default=False, type=bool, action="store")
 
     # data-toolset to_csv
     to_csv_parser = subparsers.add_parser("to_csv", help="Convert a file to CSV format")
@@ -101,16 +102,21 @@ def init_args() -> Namespace:
     to_csv_parser.add_argument("output_path", type=Path, action="store", help="Path to the output CSV file")
     to_csv_parser.add_argument("--has_header", default=True, type=bool, action="store")
     to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store", help="The delimiter character used in the CSV file.")
+    to_csv_parser.add_argument("--line_terminator", default="\n", type=str, action="store")
+    to_csv_parser.add_argument("--quote", default="\"", type=str, action="store")
 
     # data-toolset to_avro
     to_avro_parser = subparsers.add_parser("to_avro", help="Convert a file to Avro format")
     to_avro_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_avro_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Avro file")
+    to_avro_parser.add_argument("--compression", choices=["uncompressed", "snappy", "deflate"], default="uncompressed", action="store")
 
     # data-toolset to_parquet
     to_parquet_parser = subparsers.add_parser("to_parquet", help="Convert a file to Parquet format")
     to_parquet_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_parquet_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
+    to_parquet_parser.add_argument("--compression", choices=[
+                       "lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"], default="uncompressed", action="store")
 
     # data-toolset random_sample
     random_sample_parser = subparsers.add_parser("random_sample", help="Randomly sample records from a file")
