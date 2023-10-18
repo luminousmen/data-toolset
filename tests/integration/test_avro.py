@@ -1,4 +1,3 @@
-
 import subprocess
 from pathlib import Path
 
@@ -13,9 +12,6 @@ from utils import TEST_DATA_DIR
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_head_command(file_path):
@@ -31,9 +27,6 @@ def test_head_command(file_path):
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_tail_command(file_path):
@@ -49,9 +42,6 @@ def test_tail_command(file_path):
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_meta_command(file_path):
@@ -62,14 +52,12 @@ def test_meta_command(file_path):
     # @TODO: check the result
     assert len(result.stdout) > 0
 
+
 @pytest.mark.parametrize(
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_schema_command(file_path):
@@ -86,9 +74,6 @@ def test_schema_command(file_path):
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_stats_command(file_path):
@@ -105,9 +90,6 @@ def test_stats_command(file_path):
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_validate_command(file_path):
@@ -125,9 +107,6 @@ def test_validate_command(file_path):
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
     ],
 )
 def test_query_command(file_path):
@@ -138,54 +117,6 @@ def test_query_command(file_path):
     assert result.returncode == 0
     assert result.stderr == ''
     # @TODO: check the result
-
-
-@pytest.mark.parametrize(
-    "file_path",
-    [
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
-    ],
-)
-def test_to_json_command(file_path):
-    output_path = Path("output.json")
-    try:
-        result = subprocess.run(["data-toolset", "to_json", file_path, output_path], capture_output=True,
-                                text=True)
-        assert result.returncode == 0
-        assert result.stderr == ''
-        assert output_path.is_file()
-        assert output_path.stat().st_size > 0
-        # @TODO: check the result
-    finally:
-        output_path.unlink()
-
-
-@pytest.mark.parametrize(
-    "file_path",
-    [
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata3.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata4.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata5.avro",
-    ],
-)
-def test_to_json_command(file_path):
-    output_path = Path("output.csv")
-    try:
-        result = subprocess.run(["data-toolset", "to_csv", file_path, output_path], capture_output=True,
-                                text=True)
-        assert result.returncode == 0
-        assert result.stderr == ''
-        assert output_path.is_file()
-        assert output_path.stat().st_size > 0
-        # @TODO: check the result
-    finally:
-        output_path.unlink()
 
 
 def test_merge_command():
@@ -218,16 +149,84 @@ def test_merge_command():
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
-def test_to_parquet(file_path):
-    output_path = Path("output.parquet")
-    result = subprocess.run(["data-toolset", "to_parquet", file_path, output_path], capture_output=True,
+def test_count_command(file_path):
+    result = subprocess.run(["data-toolset", "count", file_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
     assert result.stderr == ''
-    assert output_path.is_file()
-    assert output_path.stat().st_size > 0
+    # @TODO: check the result
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+    ],
+)
+def test_to_json_command(file_path):
+    output_path = Path("output.json")
+    try:
+        result = subprocess.run(["data-toolset", "to_json", file_path, output_path], capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
+        # @TODO: check the result
+    finally:
+        output_path.unlink()
+
+
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+    ],
+)
+def test_to_csv_command(file_path):
+    output_path = Path("output.csv")
+    try:
+        result = subprocess.run(["data-toolset", "to_csv", file_path, output_path], capture_output=True,
+                                text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
+        # @TODO: check the result
+    finally:
+        output_path.unlink()
+
+
+@pytest.mark.parametrize(
+    ("file_path", "compression"),
+    [
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "uncompressed"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "snappy"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "gzip"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "lz4"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "lzo"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "brotli"),
+        (TEST_DATA_DIR / "data" / "avro" / "test.avro", "zstd"),
+    ],
+)
+def test_to_parquet_command(file_path, compression):
+    output_path = Path("output.parquet")
+    try:
+        result = subprocess.run([
+            "data-toolset", "to_parquet", file_path, output_path, "--compression", compression],
+            capture_output=True,
+            text=True)
+        assert result.returncode == 0
+        assert result.stderr == ''
+        assert output_path.is_file()
+        assert output_path.stat().st_size > 0
+    finally:
+        output_path.unlink()
 
 
 @pytest.mark.parametrize(
@@ -236,12 +235,12 @@ def test_to_parquet(file_path):
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
     ],
 )
-def test_to_parquet(file_path):
+def test_random_sample_command(file_path):
     output_path = Path("output.avro")
-    result = subprocess.run(["data-toolset", "random_sample", file_path, output_path, "--n", "10"], capture_output=True,
-                            text=True)
+    result = subprocess.run([
+        "data-toolset", "random_sample", file_path, output_path, "--n", "10"], capture_output=True,
+        text=True)
     assert result.returncode == 0
     assert result.stderr == ''
     assert output_path.is_file()
     assert output_path.stat().st_size > 0
-

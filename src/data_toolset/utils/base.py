@@ -17,11 +17,6 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def write_arrow_table(cls, table: pa.Table, file_path: Path) -> None:
-        ...
-
-    @classmethod
-    @abstractmethod
     def validate_format(cls, file_path: Path) -> None:
         ...
 
@@ -67,23 +62,25 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def to_json(cls, file_path: Path, output_path: Path) -> None:
+    def to_json(cls, file_path: Path, output_path: Path, pretty: bool = False) -> None:
         ...
 
     @classmethod
     @abstractmethod
-    def to_csv(cls, file_path: Path, output_path: Path, *, has_header: bool = True, delimiter: str = ",") -> None:
+    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
+               line_terminator: str = "\n", quote: str = '\"') -> None:
         ...
 
     @classmethod
-    @abstractmethod
-    def to_avro(cls, file_path: Path, output_path: Path) -> None:
-        ...
+    def to_avro(cls, file_path: Path, output_path: Path,
+                compression: T.Literal["uncompressed", "snappy", "deflate"] = "uncompressed") -> None:
+        pass
 
     @classmethod
-    @abstractmethod
-    def to_parquet(cls, file_path: Path, output_path: Path) -> None:
-        ...
+    def to_parquet(cls, file_path: Path, output_path: Path,
+                   compression: T.Literal[
+                       "lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"] = "uncompressed") -> None:
+        pass
 
     @classmethod
     def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> polars.DataFrame:
@@ -131,5 +128,6 @@ class BaseUtils(ABC, UtilMixin):
         return df
 
     @classmethod
-    def random_sample(cls, file_path: Path, output_path: Path, *, n: int, fraction: float = None):
+    @abstractmethod
+    def random_sample(cls, file_path: Path, output_path: Path, *, n: int = None, fraction: float = None):
         ...
