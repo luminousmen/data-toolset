@@ -1,4 +1,3 @@
-import json
 import logging
 import typing as T
 from pathlib import Path
@@ -8,7 +7,6 @@ import pyarrow.parquet as pq
 import polars
 
 from data_toolset.utils.base import BaseUtils
-from data_toolset.utils.utils import NpEncoder
 
 
 class ParquetUtils(BaseUtils):
@@ -69,50 +67,19 @@ class ParquetUtils(BaseUtils):
         print(parquet_file.schema)
 
     @classmethod
-    def stats(cls, file_path: Path) -> T.Tuple[int, dict]:
+    def stats(cls, file_path: Path) -> polars.DataFrame:
         """
         Calculate statistics for a Parquet file.
 
         :param file_path: Path to the Parquet file to calculate statistics for.
         :type file_path: Path
         :return: A tuple containing the number of rows and column statistics.
-        :rtype: Tuple[int, dict]
+        :rtype: polars.DataFrame
         """
-        parquet_file = pq.ParquetFile(file_path)
-        num_rows = parquet_file.metadata.num_rows
-        column_stats = {}
-        for i in range(parquet_file.num_row_groups):
-            table = parquet_file.read_row_group(i)
-            for j, column_name in enumerate(table.schema.names):
-                column = table.column(j)
-                column_stat = column_stats.get(column_name, {
-                    "count": 0,
-                    "null_count": 0,
-                    "min": None,
-                    "max": None
-                })
-                column_stat["count"] += len(column)
-                column_stat["null_count"] += column.null_count
-                # Process each chunk in the ChunkedArray
-                for chunk in column.iterchunks():
-                    if chunk.null_count == len(chunk):  # Skip if all values are null
-                        continue
-                    non_null_values = polars.from_arrow(chunk).drop_nans()
-
-                    if len(non_null_values) > 0:
-                        chunk_min = non_null_values[0]
-                        chunk_max = non_null_values[-1]
-
-                        if column_stat["min"] is None or chunk_min < column_stat["min"]:
-                            column_stat["min"] = chunk_min
-
-                        if column_stat["max"] is None or chunk_max > column_stat["max"]:
-                            column_stat["max"] = chunk_max
-
-                column_stats[column_name] = column_stat
-
-        print(json.dumps(column_stats, indent=4, cls=NpEncoder, default=str))
-        return num_rows, column_stats
+        df = polars.read_parquet(source=file_path)
+        column_stats = df.describe()
+        print(column_stats)
+        return df.describe()
 
     @classmethod
     def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
@@ -181,7 +148,7 @@ class ParquetUtils(BaseUtils):
         pq.write_table(table, output_path)
 
     @classmethod
-    def validate(cls, file_path: Path, schema_path: Path = None) -> None:
+    def validate(cls, file_path: Path, schema_path: T.Optional[Path] = None) -> None:
         """
         Validate a Parquet file against a given schema.
 
@@ -196,8 +163,7 @@ class ParquetUtils(BaseUtils):
         cls.validate_format(file_path)
 
         if schema_path:
-            table = cls.to_arrow_table(file_path)
-            df = polars.from_arrow(table)
+            df = polars.read_parquet(source=file_path)
             print(df.schema)
             # @TODO: implement that
         else:
@@ -216,8 +182,7 @@ class ParquetUtils(BaseUtils):
         :param pretty: Whether to format the JSON file with indentation (default is False).
         :type pretty: bool
         """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
+        df = polars.read_parquet(source=file_path)
         df.write_json(file=output_path, pretty=pretty, row_oriented=True)
 
     @classmethod
@@ -239,9 +204,9 @@ class ParquetUtils(BaseUtils):
         :param quote: The character used to enclose fields in quotes (default is '\"').
         :type quote: str
         """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator, quote=quote)
+        df = polars.read_parquet(source=file_path)
+        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
+                     quote_char=quote)
 
     @classmethod
     def to_avro(cls, file_path: Path, output_path: Path,
@@ -261,8 +226,8 @@ class ParquetUtils(BaseUtils):
         df.write_avro(file=output_path, compression=compression)
 
     @classmethod
-    def random_sample(cls, file_path: Path, output_path: Path, n: int = None, fraction: float = None,
-                      with_replacement: bool = False, shuffle: bool = False, seed: T.Any = None) -> None:
+    def random_sample(cls, file_path: Path, output_path: Path, n: T.Optional[int] = None, fraction: T.Optional[float] = None,
+                      with_replacement: bool = False, shuffle: bool = False) -> None:
         """
         Create a random sample from an Parquet file and save it as an Parquet file.
 
@@ -278,9 +243,7 @@ class ParquetUtils(BaseUtils):
         :type with_replacement: bool
         :param shuffle: Whether to shuffle the input data before sampling (default is False).
         :type shuffle: bool
-        :param seed: The seed for the random number generator (optional).
-        :type seed: Any
         """
         df = polars.read_parquet(source=file_path)
-        sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle, seed=seed)
+        sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle)
         sample_df.write_parquet(output_path)

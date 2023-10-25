@@ -14,7 +14,7 @@ data-toolset is designed to simplify your data processing tasks by providing a m
 Python 3.8, Python 3.9 and 3.10 are supported and tested (to some extent).
 
 ```bash
-python -m pip install --user data-toolset
+python -m pip install data-toolset
 ```
 
 ## Usage
@@ -73,22 +73,44 @@ shape: (2, 7)
 └─────────────────┴─────┴──────────┴────────┴───────────────────────┴────────────────────────────────────┴───────────────────┘
 ```
 
+Get basic data statistics: 
+
+```bash
+$ data-toolset stats my_data.avro
+shape: (9, 8)
+┌────────────┬─────────────────┬───────────┬──────────┬────────────┬──────────────────────────┬─────────┬────────────┐
+│ describe   ┆ character       ┆ age       ┆ is_human ┆ height     ┆ quote                    ┆ friends ┆ appearance │
+│ ---        ┆ ---             ┆ ---       ┆ ---      ┆ ---        ┆ ---                      ┆ ---     ┆ ---        │
+│ str        ┆ str             ┆ f64       ┆ f64      ┆ f64        ┆ str                      ┆ str     ┆ str        │
+╞════════════╪═════════════════╪═══════════╪══════════╪════════════╪══════════════════════════╪═════════╪════════════╡
+│ count      ┆ 3               ┆ 3.0       ┆ 3.0      ┆ 3.0        ┆ 3                        ┆ 3       ┆ 3          │
+│ null_count ┆ 0               ┆ 0.0       ┆ 0.0      ┆ 0.0        ┆ 0                        ┆ 0       ┆ 0          │
+│ mean       ┆ null            ┆ 31.666667 ┆ 0.666667 ┆ 163.833333 ┆ null                     ┆ null    ┆ null       │
+│ std        ┆ null            ┆ 20.207259 ┆ 0.57735  ┆ 12.466889  ┆ null                     ┆ null    ┆ null       │
+│ min        ┆ Alice           ┆ 10.0      ┆ 0.0      ┆ 150.5      ┆ Curiouser and curiouser! ┆ null    ┆ null       │
+│ 25%        ┆ null            ┆ 10.0      ┆ null     ┆ 150.5      ┆ null                     ┆ null    ┆ null       │
+│ 50%        ┆ null            ┆ 35.0      ┆ null     ┆ 165.8      ┆ null                     ┆ null    ┆ null       │
+│ 75%        ┆ null            ┆ 50.0      ┆ null     ┆ 175.2      ┆ null                     ┆ null    ┆ null       │
+│ max        ┆ Queen of Hearts ┆ 50.0      ┆ 1.0      ┆ 175.2      ┆ Off with their heads!    ┆ null    ┆ null       │
+└────────────┴─────────────────┴───────────┴──────────┴────────────┴──────────────────────────┴─────────┴────────────┘
+```
+
 Merge multiple Avro files into one:
 
 ```bash
-data-toolset merge file1.avro file2.avro file3.avro merged_file.avro
+$ data-toolset merge file1.avro file2.avro file3.avro merged_file.avro
 ```
 
 Convert Avro file into Parquet:
 
 ```bash
-data-toolset to_parquet my_data.avro output.parquet
+$ data-toolset to_parquet my_data.avro output.parquet
 ```
 
 Convert Parquet file into JSON:
 
 ```bash
-data-toolset to_json my_data.parquet output.json
+$ data-toolset to_json my_data.parquet output.json
 ```
 
 ## Contributing

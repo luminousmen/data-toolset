@@ -71,38 +71,20 @@ class AvroUtils(BaseUtils):
             print(schema)
 
     @classmethod
-    def stats(cls, file_path: Path) -> T.Tuple[int, T.Dict]:
+    def stats(cls, file_path: Path) -> polars.DataFrame:
         """
         Calculate statistics for an Avro file.
 
         :param file_path: Path to the Avro file to calculate statistics for.
         :type file_path: Path
         :return: A tuple containing the number of rows and column statistics.
-        :rtype: Tuple[int, dict]
+        :rtype: polars.DataFrame
         """
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            num_rows = 0
-            column_stats = {}
-            for row in avro_reader:
-                num_rows += 1
-                for k, v in row.items():
-                    column_stat = column_stats.get(k, {
-                        "count": 0,
-                        "null_count": 0,
-                        "min": None,
-                        "max": None
-                    })
-                    column_stat["count"] += 1
-                    if v is None:
-                        column_stat["null_count"] += 1
-                    elif column_stat["min"] is None or cls.has_comparison_methods(v) and v < column_stat["min"]:
-                        column_stat["min"] = v
-                    elif column_stat["max"] is None or cls.has_comparison_methods(v) and v > column_stat["max"]:
-                        column_stat["max"] = v
-                    column_stats[k] = column_stat
-            print(json.dumps(column_stats, indent=4))
-            return num_rows, column_stats
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        column_stats = df.describe()
+        print(column_stats)
+        return column_stats
 
     @classmethod
     def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
@@ -116,18 +98,11 @@ class AvroUtils(BaseUtils):
         :return: Polars Dataframe containing the last N records.
         :rtype: polars.DataFrame
         """
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            records = list(avro_reader)
-            num_records = len(records)
-
-            # Calculate the number of records to read
-            num_to_read = min(num_records, n)
-            # Read the last N records and store them in a list
-            records = [record for record in records[num_records - num_to_read:num_records]]
-            df = polars.from_records(records)
-            print(df)
-            return df
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df = df.tail(n)
+        print(df)
+        return df
 
     @classmethod
     def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
@@ -141,14 +116,9 @@ class AvroUtils(BaseUtils):
         :return: Polars Dataframe containing the first N records.
         :rtype: polars.DataFrame
         """
-        records = []
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            for i, record in enumerate(avro_reader):
-                if i == n:
-                    break
-                records.append(record)
-        df = polars.from_records(records)
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df = df.head(n)
         print(df)
         return df
 
@@ -162,13 +132,9 @@ class AvroUtils(BaseUtils):
         :return: The total number of records in the file.
         :rtype: int
         """
-        with open(file_path, "rb") as f:
-            record_count = 0
-            avro_reader = fastavro.reader(f)
-            for _ in avro_reader:
-                record_count += 1
-
-            print(record_count)
+        table = cls.to_arrow_table(file_path)
+        record_count = table.shape[0]
+        print(record_count)
         return record_count
 
     @classmethod
@@ -194,7 +160,7 @@ class AvroUtils(BaseUtils):
                     fastavro.writer(out, None, avro_reader, codec=avro_reader.codec, metadata=avro_reader.metadata)
 
     @classmethod
-    def validate(cls, file_path: Path, schema_path: Path = None) -> None:
+    def validate(cls, file_path: Path, schema_path: T.Optional[Path] = None) -> None:
         """
         Validate an Avro file against a given schema.
 
@@ -235,10 +201,9 @@ class AvroUtils(BaseUtils):
         :param pretty: Whether to format the JSON file with indentation (default is False).
         :type pretty: bool
         """
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            df = polars.from_records(list(avro_reader))
-            df.write_json(file=output_path, pretty=pretty, row_oriented=True)
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df.write_json(file=output_path, pretty=pretty, row_oriented=True)
 
     @classmethod
     def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
@@ -259,11 +224,10 @@ class AvroUtils(BaseUtils):
         :param quote: The character used to enclose fields in quotes (default is '\"').
         :type quote: str
         """
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            df = polars.from_records(list(avro_reader))
-            df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
-                         quote=quote)
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
+                     quote_char=quote)
 
     @classmethod
     def to_parquet(cls, file_path: Path, output_path: Path,
@@ -284,8 +248,8 @@ class AvroUtils(BaseUtils):
         df.write_parquet(file=output_path)
 
     @classmethod
-    def random_sample(cls, file_path: Path, output_path: Path, n: int = None, fraction: float = None,
-                      with_replacement: bool = False, shuffle: bool = False, seed: T.Any = None) -> None:
+    def random_sample(cls, file_path: Path, output_path: Path, n: T.Optional[int] = None, fraction: T.Optional[float] = None,
+                      with_replacement: bool = False, shuffle: bool = False) -> None:
         """
         Create a random sample from an Avro file and save it as an Avro file.
 
@@ -301,11 +265,8 @@ class AvroUtils(BaseUtils):
         :type with_replacement: bool
         :param shuffle: Whether to shuffle the input data before sampling (default is False).
         :type shuffle: bool
-        :param seed: The seed for the random number generator (optional).
-        :type seed: Any
         """
-        with open(file_path, "rb") as f:
-            avro_reader = fastavro.reader(f)
-            df = polars.from_records(list(avro_reader))
-            sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle, seed=seed)
-            sample_df.write_avro(output_path)
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle)
+        sample_df.write_avro(output_path)

@@ -8,17 +8,29 @@ import pyarrow.parquet as pq
 
 # @TODO: consolidate file paths somewhere
 @pytest.mark.parametrize(
-    "file_path",
+    ("file_path", "num_records"),
     [
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
+        (TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet", "0"),
+        (TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet", "10"),
     ],
 )
-def test_head_command(file_path):
-    result = subprocess.run(["data-toolset", "head", file_path, "-n", "10"], capture_output=True,
+def test_head_command(file_path, num_records):
+    result = subprocess.run(["data-toolset", "head", file_path, "-n", num_records], capture_output=True,
+                            text=True)
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert len(result.stdout) > 0
+
+
+@pytest.mark.parametrize(
+    ("file_path", "num_records"),
+    [
+        (TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet", "0"),
+        (TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet", "10"),
+    ],
+)
+def test_tail_command(file_path, num_records):
+    result = subprocess.run(["data-toolset", "tail", file_path, "-n", num_records], capture_output=True,
                             text=True)
     assert result.returncode == 0
     assert result.stderr == ''
@@ -29,28 +41,6 @@ def test_head_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
-    ],
-)
-def test_tail_command(file_path):
-    result = subprocess.run(["data-toolset", "tail", file_path, "-n", "10"], capture_output=True,
-                            text=True)
-    assert result.returncode == 0
-    assert result.stderr == ''
-    assert len(result.stdout) > 0
-
-
-@pytest.mark.parametrize(
-    "file_path",
-    [
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
     ],
 )
 def test_meta_command(file_path):
@@ -66,10 +56,6 @@ def test_meta_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
     ],
 )
 def test_schema_command(file_path):
@@ -85,10 +71,6 @@ def test_schema_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
     ],
 )
 def test_stats_command(file_path):
@@ -104,10 +86,6 @@ def test_stats_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata3.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata4.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata5.parquet",
     ],
 )
 def test_query_command(file_path):
@@ -149,7 +127,6 @@ def test_merge_command():
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata1.parquet",
-        TEST_DATA_DIR / "data" / "sample-data" / "parquet" / "userdata2.parquet",
     ],
 )
 def test_count_command(file_path):
