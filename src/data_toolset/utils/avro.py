@@ -71,70 +71,38 @@ class AvroUtils(BaseUtils):
             print(schema)
 
     @classmethod
-    def stats(cls, file_path: Path) -> polars.DataFrame:
+    def stats(cls, file_path: Path) -> T.Tuple[int, T.Dict]:
         """
         Calculate statistics for an Avro file.
 
         :param file_path: Path to the Avro file to calculate statistics for.
         :type file_path: Path
         :return: A tuple containing the number of rows and column statistics.
-        :rtype: polars.DataFrame
+        :rtype: Tuple[int, dict]
         """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        column_stats = df.describe()
-        print(column_stats)
-        return column_stats
-
-    @classmethod
-    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the last N records of an Avro file.
-
-        :param file_path: Path to the Avro file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the end of the file.
-        :type n: int
-        :return: Polars Dataframe containing the last N records.
-        :rtype: polars.DataFrame
-        """
-        table = cls.to_arrow_table(file_path)
-        offset = 0 if table.num_rows - n < 0 else table.num_rows - n
-        df = polars.from_arrow(table.slice(offset=offset, length=n))
-        print(df)
-        return df
-
-    @classmethod
-    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the first N records of a Parquet file.
-
-        :param file_path: Path to the Parquet file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the beginning of the file.
-        :type n: int
-        :return: Polars Dataframe containing the first N records.
-        :rtype: polars.DataFrame
-        """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table.slice(length=n))
-        print(df)
-        return df
-
-    @classmethod
-    def count(cls, file_path: Path) -> int:
-        """
-        Count the number of records in an Avro file.
-
-        :param file_path: Path to the Avro file to count records in.
-        :type file_path: Path
-        :return: The total number of records in the file.
-        :rtype: int
-        """
-        table = cls.to_arrow_table(file_path)
-        num_rows = table.num_rows
-        print(num_rows)
-        return num_rows
+        with open(file_path, "rb") as f:
+            avro_reader = fastavro.reader(f)
+            num_rows = 0
+            column_stats = {}
+            for row in avro_reader:
+                num_rows += 1
+                for k, v in row.items():
+                    column_stat = column_stats.get(k, {
+                        "count": 0,
+                        "null_count": 0,
+                        "min": None,
+                        "max": None
+                    })
+                    column_stat["count"] += 1
+                    if v is None:
+                        column_stat["null_count"] += 1
+                    elif column_stat["min"] is None or cls.has_comparison_methods(v) and v < column_stat["min"]:
+                        column_stat["min"] = v
+                    elif column_stat["max"] is None or cls.has_comparison_methods(v) and v > column_stat["max"]:
+                        column_stat["max"] = v
+                    column_stats[k] = column_stat
+            print(json.dumps(column_stats, indent=4))
+            return num_rows, column_stats
 
     @classmethod
     def merge(cls, file_paths: T.List[Path], output_path: Path) -> None:
@@ -187,46 +155,6 @@ class AvroUtils(BaseUtils):
         else:
             print("File is a valid Avro file.")
             logging.info("File is a valid Avro file.")
-
-    @classmethod
-    def to_json(cls, file_path: Path, output_path: Path, pretty: bool = False) -> None:
-        """
-        Convert an Avro file to a JSON file.
-
-        :param file_path: Path to the Avro file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output JSON file.
-        :type output_path: Path
-        :param pretty: Whether to format the JSON file with indentation (default is False).
-        :type pretty: bool
-        """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df.write_json(file=output_path, pretty=pretty, row_oriented=True)
-
-    @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
-               line_terminator: str = "\n", quote: str = '\"') -> None:
-        """
-        Convert an Avro file to a CSV file.
-
-        :param file_path: Path to the Avro file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output CSV file.
-        :type output_path: Path
-        :param has_header: Whether the CSV file should include a header row (default is True).
-        :type has_header: bool
-        :param delimiter: The character used to separate fields in the CSV (default is ',').
-        :type delimiter: str
-        :param line_terminator: The character(s) used to terminate lines in the CSV (default is '\n').
-        :type line_terminator: str
-        :param quote: The character used to enclose fields in quotes (default is '\"').
-        :type quote: str
-        """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
-                     quote_char=quote)
 
     @classmethod
     def to_parquet(cls, file_path: Path, output_path: Path,

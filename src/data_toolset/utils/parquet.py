@@ -1,3 +1,4 @@
+import json
 import logging
 import typing as T
 from pathlib import Path
@@ -7,6 +8,7 @@ import pyarrow.parquet as pq
 import polars
 
 from data_toolset.utils.base import BaseUtils
+from data_toolset.utils.utils import NpEncoder
 
 
 class ParquetUtils(BaseUtils):
@@ -67,67 +69,50 @@ class ParquetUtils(BaseUtils):
         print(parquet_file.schema)
 
     @classmethod
-    def stats(cls, file_path: Path) -> polars.DataFrame:
+    def stats(cls, file_path: Path) -> T.Tuple[int, dict]:
         """
         Calculate statistics for a Parquet file.
 
         :param file_path: Path to the Parquet file to calculate statistics for.
         :type file_path: Path
         :return: A tuple containing the number of rows and column statistics.
-        :rtype: polars.DataFrame
-        """
-        df = polars.read_parquet(source=file_path)
-        column_stats = df.describe()
-        print(column_stats)
-        return df.describe()
-
-    @classmethod
-    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the last N records of a Parquet file.
-
-        :param file_path: Path to the Parquet file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the end of the file.
-        :type n: int
-        :return: Polars Dataframe containing the last N records.
-        :rtype: polars.DataFrame
-        """
-        df = polars.read_parquet(source=file_path)
-        df = df.tail(n=n)
-        print(df)
-        return df
-
-    @classmethod
-    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the first N records of a Parquet file.
-
-        :param file_path: Path to the Parquet file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the beginning of the file.
-        :type n: int
-        :return: Polars Dataframe containing the first N records.
-        :rtype: polars.DataFrame
-        """
-        df = polars.read_parquet(source=file_path, n_rows=n)
-        print(df)
-        return df
-
-    @classmethod
-    def count(cls, file_path: Path) -> int:
-        """
-        Count the number of records in a Parquet file.
-
-        :param file_path: Path to the Parquet file to count records in.
-        :type file_path: Path
-        :return: The total number of records in the file.
-        :rtype: int
+        :rtype: Tuple[int, dict]
         """
         parquet_file = pq.ParquetFile(file_path)
         num_rows = parquet_file.metadata.num_rows
-        print(num_rows)
-        return num_rows
+        column_stats = {}
+        for i in range(parquet_file.num_row_groups):
+            table = parquet_file.read_row_group(i)
+            for j, column_name in enumerate(table.schema.names):
+                column = table.column(j)
+                column_stat = column_stats.get(column_name, {
+                    "count": 0,
+                    "null_count": 0,
+                    "min": None,
+                    "max": None
+                })
+                column_stat["count"] += len(column)
+                column_stat["null_count"] += column.null_count
+                # Process each chunk in the ChunkedArray
+                for chunk in column.iterchunks():
+                    if chunk.null_count == len(chunk):  # Skip if all values are null
+                        continue
+                    non_null_values = polars.from_arrow(chunk).drop_nans()
+
+                    if len(non_null_values) > 0:
+                        chunk_min = non_null_values[0]
+                        chunk_max = non_null_values[-1]
+
+                        if column_stat["min"] is None or chunk_min < column_stat["min"]:
+                            column_stat["min"] = chunk_min
+
+                        if column_stat["max"] is None or chunk_max > column_stat["max"]:
+                            column_stat["max"] = chunk_max
+
+                column_stats[column_name] = column_stat
+
+        print(json.dumps(column_stats, indent=4, cls=NpEncoder, default=str))
+        return num_rows, column_stats
 
     @classmethod
     def merge(cls, file_paths: T.List[Path], output_path: Path) -> None:
@@ -169,44 +154,6 @@ class ParquetUtils(BaseUtils):
         else:
             print("File is a valid Parquet file.")
             logging.info("File is a valid Parquet file.")
-
-    @classmethod
-    def to_json(cls, file_path: Path, output_path: Path, pretty: bool = False) -> None:
-        """
-        Convert an Parquet file to a JSON file.
-
-        :param file_path: Path to the Parquet file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output JSON file.
-        :type output_path: Path
-        :param pretty: Whether to format the JSON file with indentation (default is False).
-        :type pretty: bool
-        """
-        df = polars.read_parquet(source=file_path)
-        df.write_json(file=output_path, pretty=pretty, row_oriented=True)
-
-    @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
-               line_terminator: str = "\n", quote: str = '\"') -> None:
-        """
-        Convert an Parquet file to a CSV file.
-
-        :param file_path: Path to the Parquet file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output CSV file.
-        :type output_path: Path
-        :param has_header: Whether the CSV file should include a header row (default is True).
-        :type has_header: bool
-        :param delimiter: The character used to separate fields in the CSV (default is ',').
-        :type delimiter: str
-        :param line_terminator: The character(s) used to terminate lines in the CSV (default is '\n').
-        :type line_terminator: str
-        :param quote: The character used to enclose fields in quotes (default is '\"').
-        :type quote: str
-        """
-        df = polars.read_parquet(source=file_path)
-        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
-                     quote_char=quote)
 
     @classmethod
     def to_avro(cls, file_path: Path, output_path: Path,

@@ -8,8 +8,16 @@ import pyarrow as pa
 
 
 class BaseUtils(ABC):
+    @classmethod
+    def has_comparison_methods(cls, obj: T.Dict) -> bool:
+        try:
+            # @TODO: better solution is needed here
+            return obj < obj < obj == obj
+        except TypeError:
+            return False
+
     @staticmethod
-    def print_metadata(schema, metadata, codec, serialized_size):
+    def print_metadata(schema: T.Any, metadata: T.Any, codec: T.Any, serialized_size: T.Any) -> None:
         print(f"Schema: {schema}")
         print(f"Metadata: {metadata}")
         print(f"Codec: {codec}")
@@ -37,23 +45,58 @@ class BaseUtils(ABC):
 
     @classmethod
     @abstractmethod
-    def stats(cls, file_path: Path) -> polars.DataFrame:
+    def stats(cls, file_path: Path) -> T.Tuple[int, dict]:
         ...
 
     @classmethod
-    @abstractmethod
-    def tail(cls, file_path: Path, *, n: int = 20) -> polars.DataFrame:
-        ...
+    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
+        """
+        Print the last N records of an Avro file.
+
+        :param file_path: Path to the Avro file to read.
+        :type file_path: Path
+        :param n: Number of records to print from the end of the file.
+        :type n: int
+        :return: Polars Dataframe containing the last N records.
+        :rtype: polars.DataFrame
+        """
+        table = cls.to_arrow_table(file_path)
+        offset = 0 if table.num_rows - n < 0 else table.num_rows - n
+        df = polars.from_arrow(table.slice(offset=offset, length=n))
+        print(df)
+        return df
 
     @classmethod
-    @abstractmethod
-    def head(cls, file_path: Path, *, n: int = 20) -> polars.DataFrame:
-        ...
+    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
+        """
+        Print the first N records of a Parquet file.
+
+        :param file_path: Path to the Parquet file to read.
+        :type file_path: Path
+        :param n: Number of records to print from the beginning of the file.
+        :type n: int
+        :return: Polars Dataframe containing the first N records.
+        :rtype: polars.DataFrame
+        """
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table.slice(length=n))
+        print(df)
+        return df
 
     @classmethod
-    @abstractmethod
     def count(cls, file_path: Path) -> int:
-        ...
+        """
+        Count the number of records in an Avro file.
+
+        :param file_path: Path to the Avro file to count records in.
+        :type file_path: Path
+        :return: The total number of records in the file.
+        :rtype: int
+        """
+        table = cls.to_arrow_table(file_path)
+        num_rows = table.num_rows
+        print(num_rows)
+        return num_rows
 
     @classmethod
     @abstractmethod
@@ -66,15 +109,44 @@ class BaseUtils(ABC):
         ...
 
     @classmethod
-    @abstractmethod
     def to_json(cls, file_path: Path, output_path: Path, pretty: bool = False) -> None:
-        ...
+        """
+        Convert an Avro file to a JSON file.
+
+        :param file_path: Path to the Avro file to convert.
+        :type file_path: Path
+        :param output_path: Path to the output JSON file.
+        :type output_path: Path
+        :param pretty: Whether to format the JSON file with indentation (default is False).
+        :type pretty: bool
+        """
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df.write_json(file=output_path, pretty=pretty, row_oriented=True)
 
     @classmethod
-    @abstractmethod
     def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
                line_terminator: str = "\n", quote: str = '\"') -> None:
-        ...
+        """
+        Convert an Avro file to a CSV file.
+
+        :param file_path: Path to the Avro file to convert.
+        :type file_path: Path
+        :param output_path: Path to the output CSV file.
+        :type output_path: Path
+        :param has_header: Whether the CSV file should include a header row (default is True).
+        :type has_header: bool
+        :param delimiter: The character used to separate fields in the CSV (default is ',').
+        :type delimiter: str
+        :param line_terminator: The character(s) used to terminate lines in the CSV (default is '\n').
+        :type line_terminator: str
+        :param quote: The character used to enclose fields in quotes (default is '\"').
+        :type quote: str
+        """
+        table = cls.to_arrow_table(file_path)
+        df = polars.from_arrow(table)
+        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator,
+                     quote_char=quote)
 
     @classmethod
     def to_avro(cls, file_path: Path, output_path: Path,
