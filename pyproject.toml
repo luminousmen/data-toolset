@@ -19,6 +19,7 @@ pyarrow = "^13.0.0"
 python-snappy = "^0.6.1"
 tox = "^4.11.1"
 polars = "^0.19.7"
+polars-lts-cpu = "^0.19.11"
 
 [tool.poetry.group.lint.dependencies]
 isort = "^5.10.1"

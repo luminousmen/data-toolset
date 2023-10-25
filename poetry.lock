@@ -562,6 +562,42 @@ xlsx2csv = ["xlsx2csv (>=0.8.0)"]
 xlsxwriter = ["xlsxwriter"]
 
 [[package]]
+name = "polars-lts-cpu"
+version = "0.19.11"
+description = "Blazingly fast DataFrame library"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "polars_lts_cpu-0.19.11-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6651062dd2e03d52a290e87faa43ba165d2954a1f7d53b2050a8373a6dece0de"},
+    {file = "polars_lts_cpu-0.19.11-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:5e80664e1d74e4f3b12d38c391315d85eb5b79bbf5246ce354a17ca1434b5c07"},
+    {file = "polars_lts_cpu-0.19.11-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:154e2faf3788f139777d4b5387b54fad6ba8f7ac9390ae2d08140013a0408b9a"},
+    {file = "polars_lts_cpu-0.19.11-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:faeeed6b46092d281eefdc022516964de7c86e663a5481101f7d0259728938cd"},
+    {file = "polars_lts_cpu-0.19.11-cp38-abi3-win_amd64.whl", hash = "sha256:b7ddeceec2af30cb38b1674cf4e906b12cd67fd2ab5ffaed2460a44a67752aa2"},
+    {file = "polars_lts_cpu-0.19.11.tar.gz", hash = "sha256:f6cca36e731b6c267e3e6c9fc3a7cb9e7c764eaca614efc92d3d915b7fc8cce2"},
+]
+
+[package.extras]
+adbc = ["adbc_driver_sqlite"]
+all = ["polars[adbc,cloudpickle,connectorx,deltalake,fsspec,gevent,matplotlib,numpy,pandas,pyarrow,pydantic,pyiceberg,sqlalchemy,timezone,xlsx2csv,xlsxwriter]"]
+cloudpickle = ["cloudpickle"]
+connectorx = ["connectorx"]
+deltalake = ["deltalake (>=0.10.0)"]
+fsspec = ["fsspec"]
+gevent = ["gevent"]
+matplotlib = ["matplotlib"]
+numpy = ["numpy (>=1.16.0)"]
+openpyxl = ["openpyxl (>=3.0.0)"]
+pandas = ["pandas", "pyarrow (>=7.0.0)"]
+pyarrow = ["pyarrow (>=7.0.0)"]
+pydantic = ["pydantic"]
+pyiceberg = ["pyiceberg (>=0.5.0)"]
+pyxlsb = ["pyxlsb (>=1.0)"]
+sqlalchemy = ["pandas", "sqlalchemy"]
+timezone = ["backports.zoneinfo", "tzdata"]
+xlsx2csv = ["xlsx2csv (>=0.8.0)"]
+xlsxwriter = ["xlsxwriter"]
+
+[[package]]
 name = "pyarrow"
 version = "13.0.0"
 description = "Python library for Apache Arrow"
@@ -878,4 +914,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "0845dcd9c305c856651c157ceb281d7ef3104adb675f67636fdbd9b45e13df54"
+content-hash = "8ead347bbd064420b70023313f8f2a67964392cfbcd0c41aacb5e878c286737d"
