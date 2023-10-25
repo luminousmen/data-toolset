@@ -17,6 +17,10 @@ Python 3.8, Python 3.9 and 3.10 are supported and tested (to some extent).
 python -m pip install data-toolset
 ```
 
+## Legacy
+
+Do you want polars to run on an old CPU (e.g. dating from before 2011), or on an x86-64 build of Python on Apple Silicon under Rosetta? Install `pip install polars-lts-cpu`. This version of polars is compiled without AVX target features.
+
 ## Usage
 
 ```bash

@@ -99,8 +99,8 @@ class AvroUtils(BaseUtils):
         :rtype: polars.DataFrame
         """
         table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df = df.tail(n)
+        offset = 0 if table.num_rows - n < 0 else table.num_rows - n
+        df = polars.from_arrow(table.slice(offset=offset, length=n))
         print(df)
         return df
 
@@ -117,8 +117,7 @@ class AvroUtils(BaseUtils):
         :rtype: polars.DataFrame
         """
         table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df = df.head(n)
+        df = polars.from_arrow(table.slice(length=n))
         print(df)
         return df
 
@@ -133,9 +132,9 @@ class AvroUtils(BaseUtils):
         :rtype: int
         """
         table = cls.to_arrow_table(file_path)
-        record_count = table.shape[0]
-        print(record_count)
-        return record_count
+        num_rows = table.num_rows
+        print(num_rows)
+        return num_rows
 
     @classmethod
     def merge(cls, file_paths: T.List[Path], output_path: Path) -> None:
