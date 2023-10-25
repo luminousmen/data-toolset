@@ -52,12 +52,14 @@ def init_args() -> Namespace:
     # data-toolset head
     head_parser = subparsers.add_parser("head", help="Print the first N records from a file")
     head_parser.add_argument("file_path", action="store", help="Path to a file")
-    head_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS, help="Print count lines of each of the specified files")
+    head_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS,
+                             help=f"Print count lines of each of the specified files (default is {DEFAULT_RECORDS})")
 
     # data-toolset tail
     tail_parser = subparsers.add_parser("tail", help="Print the last N records from a file")
     tail_parser.add_argument("file_path", type=Path, action="store", help="Path to a file")
-    tail_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS, help="Print count lines of each of the specified files")
+    tail_parser.add_argument("-n", type=int, action="store", default=DEFAULT_RECORDS,
+                             help=f"Print count lines of each of the specified files (default is {DEFAULT_RECORDS})")
 
     # data-toolset meta
     meta_parser = subparsers.add_parser("meta", help="Print a file's metadata")
@@ -94,29 +96,38 @@ def init_args() -> Namespace:
     to_json_parser = subparsers.add_parser("to_json", help="Convert a file to JSON format")
     to_json_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_json_parser.add_argument("output_path", type=Path, action="store", help="Path to the output JSON file")
-    to_json_parser.add_argument("--pretty", default=False, type=bool, action="store")
+    to_json_parser.add_argument("--pretty", default=False, type=bool, action="store",
+                                help="Pretty-print the JSON output (default is False)")
 
     # data-toolset to_csv
     to_csv_parser = subparsers.add_parser("to_csv", help="Convert a file to CSV format")
     to_csv_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_csv_parser.add_argument("output_path", type=Path, action="store", help="Path to the output CSV file")
-    to_csv_parser.add_argument("--has_header", default=True, type=bool, action="store")
-    to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store", help="The delimiter character used in the CSV file.")
-    to_csv_parser.add_argument("--line_terminator", default="\n", type=str, action="store")
-    to_csv_parser.add_argument("--quote", default="\"", type=str, action="store")
+    to_csv_parser.add_argument("--has_header", default=True, type=bool, action="store",
+                               help="Specify if the CSV file has a header row (default is True)")
+    to_csv_parser.add_argument("--delimiter", default=",", type=str, action="store",
+                               help="Specify the delimiter character used in the CSV file (default is ',')")
+    to_csv_parser.add_argument("--line_terminator", default="\n", type=str, action="store",
+                               help="Specify the line terminator character for the CSV file (default is '\\n')")
+    to_csv_parser.add_argument("--quote", default="\"", type=str, action="store",
+                               help="Specify the quote character used in the CSV file (default is '\"')")
 
     # data-toolset to_avro
     to_avro_parser = subparsers.add_parser("to_avro", help="Convert a file to Avro format")
     to_avro_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_avro_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Avro file")
-    to_avro_parser.add_argument("--compression", choices=["uncompressed", "snappy", "deflate"], default="uncompressed", action="store")
+    to_avro_parser.add_argument("--compression", choices=["uncompressed", "snappy", "deflate"], default="uncompressed",
+                                action="store",
+                                help="Specify the compression method for the output file (default is 'uncompressed')")
 
     # data-toolset to_parquet
     to_parquet_parser = subparsers.add_parser("to_parquet", help="Convert a file to Parquet format")
     to_parquet_parser.add_argument("file_path", type=Path, action="store", help="Path to the file to convert")
     to_parquet_parser.add_argument("output_path", type=Path, action="store", help="Path to the output Parquet file")
-    to_parquet_parser.add_argument("--compression", choices=[
-                       "lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"], default="uncompressed", action="store")
+    to_parquet_parser.add_argument("--compression",
+                                   choices=["lz4", "uncompressed", "snappy", "gzip", "lzo", "brotli", "zstd"],
+                                   default="uncompressed", action="store",
+                                   help="Specify the compression method for the output file (default is 'uncompressed')")
 
     # data-toolset random_sample
     random_sample_parser = subparsers.add_parser("random_sample", help="Randomly sample records from a file")
@@ -131,7 +142,7 @@ def init_args() -> Namespace:
     return args
 
 
-def main():
+def main() -> None:
     args = init_args()
     # @TODO: need to find a better way for the merge case
     if isinstance(args.file_path, list):

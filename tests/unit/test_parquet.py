@@ -75,18 +75,9 @@ def test_gzip_meta():
 
 def test_stats():
     file_path = TEST_DATA_DIR / "data" / "parquet" / "test.parquet"
-
-    # Call the stats method
     result = ParquetUtils.stats(file_path)
-    num_rows, columns_stats = result
-
-    assert num_rows == 3
-    assert isinstance(columns_stats, dict)
-    for col, stats in columns_stats.items():
-        assert isinstance(stats["count"], int)
-        assert isinstance(stats["null_count"], int)
-        assert "min" in stats
-        assert "max" in stats
+    assert result.shape[0] == 9
+    assert result.shape[1] == 7 + 1
 
 
 def test_head():

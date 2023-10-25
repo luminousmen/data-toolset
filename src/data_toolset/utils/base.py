@@ -6,10 +6,15 @@ import duckdb
 import polars
 import pyarrow as pa
 
-from data_toolset.utils.mixins import UtilMixin
 
+class BaseUtils(ABC):
+    @staticmethod
+    def print_metadata(schema, metadata, codec, serialized_size):
+        print(f"Schema: {schema}")
+        print(f"Metadata: {metadata}")
+        print(f"Codec: {codec}")
+        print(f"Serialized size: {serialized_size}")
 
-class BaseUtils(ABC, UtilMixin):
     @classmethod
     @abstractmethod
     def to_arrow_table(cls, file_path: Path) -> pa.Table:
@@ -32,17 +37,17 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def stats(cls, file_path: Path) -> T.Tuple[int, T.Dict]:
+    def stats(cls, file_path: Path) -> polars.DataFrame:
         ...
 
     @classmethod
     @abstractmethod
-    def tail(cls, file_path: Path, *, n: int = 20) -> T.List:
+    def tail(cls, file_path: Path, *, n: int = 20) -> polars.DataFrame:
         ...
 
     @classmethod
     @abstractmethod
-    def head(cls, file_path: Path, *, n: int = 20) -> list:
+    def head(cls, file_path: Path, *, n: int = 20) -> polars.DataFrame:
         ...
 
     @classmethod
@@ -57,7 +62,7 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def validate(cls, file_path: Path, schema_path: Path = None) -> None:
+    def validate(cls, file_path: Path, schema_path: T.Optional[Path] = None) -> None:
         ...
 
     @classmethod
@@ -83,7 +88,7 @@ class BaseUtils(ABC, UtilMixin):
         pass
 
     @classmethod
-    def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> polars.DataFrame:
+    def query(cls, file_path: Path, query_expression: str, *, chunk_size: int = 1000000) -> T.Union[polars.DataFrame, polars.Series]:
         """
         Query and filter data in an Avro or Parquet file using SQL-like expressions.
 
@@ -94,7 +99,7 @@ class BaseUtils(ABC, UtilMixin):
         :param chunk_size: Size of data chunks to retrieve per query iteration (default is 1,000,000 rows).
         :type chunk_size: int
         :return: Polars DataFrame containing the result of the query.
-        :rtype: polars.DataFrame
+        :rtype: T.Union[polars.DataFrame, polars.Series]
 
         This class method allows you to run SQL-like queries on an Avro or Parquet file,
         filtering and selecting data based on the provided query expression.
@@ -129,5 +134,6 @@ class BaseUtils(ABC, UtilMixin):
 
     @classmethod
     @abstractmethod
-    def random_sample(cls, file_path: Path, output_path: Path, *, n: int = None, fraction: float = None):
+    def random_sample(cls, file_path: Path, output_path: Path, *, n: T.Optional[int] = None,
+                      fraction: T.Optional[float] = None) -> None:
         ...
