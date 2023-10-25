@@ -115,54 +115,6 @@ class ParquetUtils(BaseUtils):
         return num_rows, column_stats
 
     @classmethod
-    def tail(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the last N records of a Parquet file.
-
-        :param file_path: Path to the Parquet file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the end of the file.
-        :type n: int
-        :return: Polars Dataframe containing the last N records.
-        :rtype: polars.DataFrame
-        """
-        df = polars.read_parquet(source=file_path)
-        df = df.tail(n=n)
-        print(df)
-        return df
-
-    @classmethod
-    def head(cls, file_path: Path, n: int = 20) -> polars.DataFrame:
-        """
-        Print the first N records of a Parquet file.
-
-        :param file_path: Path to the Parquet file to read.
-        :type file_path: Path
-        :param n: Number of records to print from the beginning of the file.
-        :type n: int
-        :return: Polars Dataframe containing the first N records.
-        :rtype: polars.DataFrame
-        """
-        df = polars.read_parquet(source=file_path, n_rows=n)
-        print(df)
-        return df
-
-    @classmethod
-    def count(cls, file_path: Path) -> int:
-        """
-        Count the number of records in a Parquet file.
-
-        :param file_path: Path to the Parquet file to count records in.
-        :type file_path: Path
-        :return: The total number of records in the file.
-        :rtype: int
-        """
-        parquet_file = pq.ParquetFile(file_path)
-        num_rows = parquet_file.metadata.num_rows
-        print(num_rows)
-        return num_rows
-
-    @classmethod
     def merge(cls, file_paths: T.List[Path], output_path: Path) -> None:
         """
         Merge multiple Parquet files into a single file.
@@ -181,7 +133,7 @@ class ParquetUtils(BaseUtils):
         pq.write_table(table, output_path)
 
     @classmethod
-    def validate(cls, file_path: Path, schema_path: Path = None) -> None:
+    def validate(cls, file_path: Path, schema_path: T.Optional[Path] = None) -> None:
         """
         Validate a Parquet file against a given schema.
 
@@ -196,52 +148,12 @@ class ParquetUtils(BaseUtils):
         cls.validate_format(file_path)
 
         if schema_path:
-            table = cls.to_arrow_table(file_path)
-            df = polars.from_arrow(table)
+            df = polars.read_parquet(source=file_path)
             print(df.schema)
             # @TODO: implement that
         else:
             print("File is a valid Parquet file.")
             logging.info("File is a valid Parquet file.")
-
-    @classmethod
-    def to_json(cls, file_path: Path, output_path: Path, pretty: bool = False) -> None:
-        """
-        Convert an Parquet file to a JSON file.
-
-        :param file_path: Path to the Parquet file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output JSON file.
-        :type output_path: Path
-        :param pretty: Whether to format the JSON file with indentation (default is False).
-        :type pretty: bool
-        """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df.write_json(file=output_path, pretty=pretty, row_oriented=True)
-
-    @classmethod
-    def to_csv(cls, file_path: Path, output_path: Path, has_header: bool = True, delimiter: str = ",",
-               line_terminator: str = "\n", quote: str = '\"') -> None:
-        """
-        Convert an Parquet file to a CSV file.
-
-        :param file_path: Path to the Parquet file to convert.
-        :type file_path: Path
-        :param output_path: Path to the output CSV file.
-        :type output_path: Path
-        :param has_header: Whether the CSV file should include a header row (default is True).
-        :type has_header: bool
-        :param delimiter: The character used to separate fields in the CSV (default is ',').
-        :type delimiter: str
-        :param line_terminator: The character(s) used to terminate lines in the CSV (default is '\n').
-        :type line_terminator: str
-        :param quote: The character used to enclose fields in quotes (default is '\"').
-        :type quote: str
-        """
-        table = cls.to_arrow_table(file_path)
-        df = polars.from_arrow(table)
-        df.write_csv(file=output_path, has_header=has_header, separator=delimiter, line_terminator=line_terminator, quote=quote)
 
     @classmethod
     def to_avro(cls, file_path: Path, output_path: Path,
@@ -261,8 +173,8 @@ class ParquetUtils(BaseUtils):
         df.write_avro(file=output_path, compression=compression)
 
     @classmethod
-    def random_sample(cls, file_path: Path, output_path: Path, n: int = None, fraction: float = None,
-                      with_replacement: bool = False, shuffle: bool = False, seed: T.Any = None) -> None:
+    def random_sample(cls, file_path: Path, output_path: Path, n: T.Optional[int] = None, fraction: T.Optional[float] = None,
+                      with_replacement: bool = False, shuffle: bool = False) -> None:
         """
         Create a random sample from an Parquet file and save it as an Parquet file.
 
@@ -278,9 +190,7 @@ class ParquetUtils(BaseUtils):
         :type with_replacement: bool
         :param shuffle: Whether to shuffle the input data before sampling (default is False).
         :type shuffle: bool
-        :param seed: The seed for the random number generator (optional).
-        :type seed: Any
         """
         df = polars.read_parquet(source=file_path)
-        sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle, seed=seed)
+        sample_df = df.sample(n=n, fraction=fraction, with_replacement=with_replacement, shuffle=shuffle)
         sample_df.write_parquet(output_path)

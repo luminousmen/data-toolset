@@ -8,17 +8,32 @@ from utils import TEST_DATA_DIR
 
 # @TODO: consolidate file paths somewhere
 @pytest.mark.parametrize(
-    "file_path",
+    ("file_path", "num_records"),
     [
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "0"),
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "10"),
     ],
 )
-def test_head_command(file_path):
-    result = subprocess.run(["data-toolset", "head", file_path, "-n", "10"], capture_output=True,
+def test_head_command(file_path, num_records):
+    result = subprocess.run(["data-toolset", "head", file_path, "-n", num_records], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
+    assert len(result.stdout) > 0
+
+
+@pytest.mark.parametrize(
+    ("file_path", "num_records"),
+    [
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "0"),
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "10"),
+    ],
+)
+def test_tail_command(file_path, num_records):
+    result = subprocess.run(["data-toolset", "tail", file_path, "-n", num_records], capture_output=True,
+                            text=True)
+    assert result.returncode == 0
+    assert result.stderr == ""
     assert len(result.stdout) > 0
 
 
@@ -26,29 +41,13 @@ def test_head_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
-    ],
-)
-def test_tail_command(file_path):
-    result = subprocess.run(["data-toolset", "tail", file_path, "-n", "10"], capture_output=True,
-                            text=True)
-    assert result.returncode == 0
-    assert result.stderr == ''
-    assert len(result.stdout) > 0
-
-
-@pytest.mark.parametrize(
-    "file_path",
-    [
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_meta_command(file_path):
     result = subprocess.run(["data-toolset", "meta", file_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     # @TODO: check the result
     assert len(result.stdout) > 0
 
@@ -57,14 +56,13 @@ def test_meta_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_schema_command(file_path):
     result = subprocess.run(["data-toolset", "schema", file_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     # @TODO: check the result
     assert len(result.stdout) > 0
 
@@ -73,14 +71,13 @@ def test_schema_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_stats_command(file_path):
     result = subprocess.run(["data-toolset", "stats", file_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     # @TODO: check the result
     assert len(result.stdout) > 0
 
@@ -89,7 +86,6 @@ def test_stats_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_validate_command(file_path):
@@ -98,7 +94,7 @@ def test_validate_command(file_path):
     result = subprocess.run(["data-toolset", "validate", file_path, "--schema_path", schema_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     assert result.stdout == 'File validation successful.\n'
 
 
@@ -106,7 +102,6 @@ def test_validate_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_query_command(file_path):
@@ -115,7 +110,7 @@ def test_query_command(file_path):
     result = subprocess.run(["data-toolset", "query", file_path, query], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     # @TODO: check the result
 
 
@@ -131,7 +126,7 @@ def test_merge_command():
                                 capture_output=True,
                                 text=True)
         assert result.returncode == 0
-        assert result.stderr == ''
+        assert result.stderr == ""
         assert output_path.is_file()
         assert output_path.stat().st_size > 0
         merged_data = []
@@ -149,14 +144,13 @@ def test_merge_command():
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_count_command(file_path):
     result = subprocess.run(["data-toolset", "count", file_path], capture_output=True,
                             text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     # @TODO: check the result
 
 
@@ -164,7 +158,6 @@ def test_count_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_to_json_command(file_path):
@@ -173,7 +166,7 @@ def test_to_json_command(file_path):
         result = subprocess.run(["data-toolset", "to_json", file_path, output_path], capture_output=True,
                                 text=True)
         assert result.returncode == 0
-        assert result.stderr == ''
+        assert result.stderr == ""
         assert output_path.is_file()
         assert output_path.stat().st_size > 0
         # @TODO: check the result
@@ -185,7 +178,6 @@ def test_to_json_command(file_path):
     "file_path",
     [
         TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata2.avro",
     ],
 )
 def test_to_csv_command(file_path):
@@ -194,7 +186,7 @@ def test_to_csv_command(file_path):
         result = subprocess.run(["data-toolset", "to_csv", file_path, output_path], capture_output=True,
                                 text=True)
         assert result.returncode == 0
-        assert result.stderr == ''
+        assert result.stderr == ""
         assert output_path.is_file()
         assert output_path.stat().st_size > 0
         # @TODO: check the result
@@ -222,7 +214,7 @@ def test_to_parquet_command(file_path, compression):
             capture_output=True,
             text=True)
         assert result.returncode == 0
-        assert result.stderr == ''
+        assert result.stderr == ""
         assert output_path.is_file()
         assert output_path.stat().st_size > 0
     finally:
@@ -230,17 +222,18 @@ def test_to_parquet_command(file_path, compression):
 
 
 @pytest.mark.parametrize(
-    "file_path",
+    ("file_path", "num_records"),
     [
-        TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro",
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "0"),
+        (TEST_DATA_DIR / "data" / "sample-data" / "avro" / "userdata1.avro", "10"),
     ],
 )
-def test_random_sample_command(file_path):
+def test_random_sample_command(file_path, num_records):
     output_path = Path("output.avro")
     result = subprocess.run([
-        "data-toolset", "random_sample", file_path, output_path, "--n", "10"], capture_output=True,
+        "data-toolset", "random_sample", file_path, output_path, "--n", num_records], capture_output=True,
         text=True)
     assert result.returncode == 0
-    assert result.stderr == ''
+    assert result.stderr == ""
     assert output_path.is_file()
     assert output_path.stat().st_size > 0
