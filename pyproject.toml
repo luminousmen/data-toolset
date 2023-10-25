@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "data-toolset"
-version = "0.1.5"
+version = "0.1.7"
 description = ""
 authors = ["Kirill Bobrov <miaplanedo@gmail.com>"]
 readme = "README.md"
