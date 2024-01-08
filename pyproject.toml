@@ -22,7 +22,7 @@ polars = ">=0.19.11,<0.21.0"
 
 [tool.poetry.group.lint.dependencies]
 isort = "^5.10.1"
-flake8 = "^6.1.0"
+flake8 = ">=6.1,<8.0"
 mypy = "^1.5"
 
 [tool.poetry.group.test.dependencies]
